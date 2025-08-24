@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WaryWEB - Games Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+          font-family: 'Inter', sans-serif;
+          background-color: #0a0a0a;
+          background-image: radial-gradient(circle at top right, rgba(121, 68, 255, 0.15), transparent 40%),
+                            radial-gradient(circle at bottom left, rgba(0, 122, 255, 0.15), transparent 50%);
+        }
+
+        .card-glass {
+          background: rgba(23, 23, 23, 0.65);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Card Hover Effect */
+        .card-hover {
+          transition: all 0.35s ease;
+        }
+        .card-hover:hover {
+          transform: scale(1.03);
+        }
+
+        /* Game Card Style (Replaces game-card for a unified look) */
+        .game-card {
+          transition: all 0.35s ease;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          background: #fff;
+          color: #000;
+        }
+        .game-card:hover {
+          transform: scale(1.03);
+          border-color: rgba(255, 255, 255, 0.25);
+          box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
+          background: #e5e5e5; /* ash/gray on hover */
+          color: #000;
+        }
+
+        .nav-link {
+          position: relative;
+        }
+        .nav-link::after {
+          content: "";
+          position: absolute;
+          width: 0%;
+          height: 2px;
+          left: 0;
+          bottom: -3px;
+          background: #fff;
+          transition: 0.3s;
+        }
+        .nav-link:hover::after {
+          width: 100%;
+        }
+
+        /* Hero Button */
+        .hero-btn {
+          transition: all 0.3s ease;
+        }
+        .hero-btn:hover {
+          transform: scale(1.05);
+          box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Fade-in animation */
+        .fade-in {
+          opacity: 0;
+          transform: translateY(30px);
+          transition: opacity 1s ease, transform 1s ease;
+        }
+        .fade-in.show {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        /* Game Tab Button Styling */
+        .game-tab.active {
+          background-color: #555 !important;
+          border-color: #888 !important;
+          color: #fff !important;
+        }
+
+        /* Minesweeper grid styling */
+        #minesweeper-grid {
+          display: grid;
+          border: 2px solid #333;
+          border-right: none;
+          border-bottom: none;
+        }
+        #minesweeper-grid div {
+          width: 30px;
+          height: 30px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-weight: bold;
+          background-color: #71717a;
+          border: 1px solid #333;
+          border-top: 1px solid #999;
+          border-left: 1px solid #999;
+          cursor: pointer;
+          user-select: none;
+          transition: background-color 0.1s ease;
+          box-shadow: inset -2px -2px 5px rgba(0,0,0,0.5), inset 2px 2px 5px rgba(255,255,255,0.2);
+        }
+        #minesweeper-grid div.uncovered {
+          background-color: #a1a1aa;
+          cursor: default;
+          box-shadow: none;
+          border-top: 1px solid #333;
+          border-left: 1px solid #333;
+          border-right: 1px solid #a1a1aa;
+          border-bottom: 1px solid #a1a1aa;
+        }
+        #minesweeper-grid div.bomb {
+          background-color: #dc2626;
+        }
+        #minesweeper-grid div.flagged {
+          color: #fde047;
+        }
+        #minesweeper-grid div.uncovered.bomb {
+          background-color: #ef4444;
+          color: white;
+          box-shadow: none;
+        }
+
+        /* Whac-A-Mole styling */
+        #whac-a-mole-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          grid-template-rows: repeat(3, 1fr);
+          gap: 1rem;
+          max-width: 380px;
+        }
+        .hole {
+          background-color: #4a3321;
+          border-radius: 50%;
+          width: 100%;
+          height: 0;
+          padding-bottom: 100%;
+          position: relative;
+          overflow: hidden;
+          cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" style="fill:%23fff; stroke:%23000; stroke-width:2;"><path d="M16 0L0 32h32z" transform="rotate(180, 16, 16)"/></svg>') 16 16, auto;
+        }
+        .mole {
+          position: absolute;
+          bottom: -15%;
+          left: 50%;
+          transform: translateX(-50%) translateY(100%);
+          font-size: 3rem;
+          transition: transform 0.2s ease-in-out;
+          user-select: none;
+          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+        }
+        .mole.up {
+          transform: translateX(-50%) translateY(0);
+        }
+
+        /* Memory Game Styling */
+        #memory-game-grid {
+          display: grid;
+          gap: 1rem;
+        }
+        .card {
+          width: 100px;
+          height: 100px;
+          background-color: transparent;
+          border-radius: 1rem;
+          transform-style: preserve-3d;
+          transition: transform 0.5s ease;
+          cursor: pointer;
+          position: relative;
+          user-select: none;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .card:hover {
+          transform: scale(1.05);
+        }
+        .card.flipped {
+          transform: rotateY(180deg);
+          cursor: default;
+        }
+        .card-face {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          backface-visibility: hidden;
+          border-radius: 1rem;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .card-content {
+          background: linear-gradient(45deg, #1e1e1e, #333);
+          color: white;
+          transform: rotateY(180deg);
+          font-size: 2rem;
+        }
+        .card-cover {
+          background: linear-gradient(45deg, #6d28d9, #9333ea);
+        }
+        .card.match .card-content, .card.match .card-cover {
+          box-shadow: 0 0 10px #34d399, 0 0 20px #34d399;
+        }
+    </style>
+</head>
+<body class="text-white">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full bg-black/50 backdrop-blur-md border-b border-gray-800 z-50">
+    <div class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+        <a href="index.html" class="text-2xl font-black">WaryWEB</a>
+        <nav class="flex gap-8 text-gray-300">
+            <a href="games.html" class="nav-link hover:text-white text-white">Games</a>
+            <a href="utilities.html" class="nav-link hover:text-white">Utilities</a>
+            <a href="index.html#about" class="nav-link hover:text-white">About</a>
+        </nav>
+        <div class="card-glass flex items-center gap-4 px-4 py-2 rounded-lg">
+            <div id="clock" class="text-lg font-bold">10:59</div>
+            <div class="border-l border-gray-600 h-6"></div>
+            <div id="date" class="text-sm text-gray-300">Dec, 2025</div>
+        </div>
+    </div>
+</header>
+
+<!-- Games Section -->
+<section id="games" class="py-24 px-6 min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-black/30 to-black/70">
+    <div class="max-w-6xl w-full mx-auto text-center mb-12">
+        <h3 class="text-4xl font-bold">Arcade Games</h3>
+        <p class="text-gray-400 mt-2">Classic and casual fun, all in one place.</p>
+    </div>
+
+    <div class="max-w-5xl w-full mx-auto p-6 md:p-12 card-glass rounded-2xl fade-in">
+        <!-- Game Selection Buttons -->
+        <div class="flex flex-wrap justify-center gap-4 mb-8">
+            <button onclick="showGame('minesweeper')" class="game-tab px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700 active">Minesweeper</button>
+            <button onclick="showGame('whac-a-mole')" class="game-tab px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700">Whac-A-Mole</button>
+            <button onclick="showGame('memory-game')" class="game-tab px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700">Memory Game</button>
+        </div>
+
+        <!-- Game Containers -->
+        <div id="game-container">
+
+            <!-- Minesweeper Game -->
+            <div id="minesweeper" class="game-content">
+                <div class="text-center mb-6">
+                    <h4 class="text-2xl font-bold mb-1">Minesweeper</h4>
+                    <p class="text-gray-400 text-sm">Clear the grid without detonating the bombs!</p>
+                </div>
+                <div class="flex flex-col items-center gap-4">
+                    <div class="flex flex-wrap gap-2 justify-center">
+                        <button onclick="startGame('easy')" class="px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm font-semibold">Easy</button>
+                        <button onclick="startGame('medium')" class="px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm font-semibold">Medium</button>
+                        <button onclick="startGame('hard')" class="px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm font-semibold">Hard</button>
+                        <button onclick="restartMinesweeper()" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold">Restart</button>
+                    </div>
+                    <div class="flex justify-between w-full max-w-sm px-4">
+                        <span>Mines: <span id="mines-count">0</span></span>
+                        <span>Time: <span id="time-count">0</span></span>
+                    </div>
+                    <div id="minesweeper-grid" class="flex flex-col"></div>
+                    <p id="minesweeper-message" class="mt-4 text-center text-lg font-bold"></p>
+                </div>
+            </div>
+
+            <!-- Whac-A-Mole Game -->
+            <div id="whac-a-mole" class="game-content hidden">
+                <div class="text-center mb-6">
+                    <h4 class="text-2xl font-bold mb-1">Whac-A-Mole</h4>
+                    <p class="text-gray-400 text-sm">Whac the moles as they pop up!</p>
+                </div>
+                <div class="flex flex-col items-center gap-4">
+                    <div class="flex gap-4">
+                        <button onclick="startWhacAMole()" id="whac-start-btn" class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold">Start Game</button>
+                        <button onclick="resetWhacAMole()" id="whac-reset-btn" class="px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-semibold">Reset</button>
+                    </div>
+                    <div class="flex justify-between w-full max-w-xs px-4">
+                        <span>Score: <span id="whac-score">0</span></span>
+                        <span>Time Left: <span id="whac-time">30</span>s</span>
+                    </div>
+                    <div id="whac-a-mole-grid" class="w-full max-w-xs">
+                        <div class="hole"><div class="mole" data-index="0">🐭</div></div>
+                        <div class="hole"><div class="mole" data-index="1">🐭</div></div>
+                        <div class="hole"><div class="mole" data-index="2">🐭</div></div>
+                        <div class="hole"><div class="mole" data-index="3">🐭</div></div>
+                        <div class="hole"><div class="mole" data-index="4">🐭</div></div>
+                        <div class="hole"><div class="mole" data-index="5">🐭</div></div>
+                        <div class="hole"><div class="mole" data-index="6">🐭</div></div>
+                        <div class="hole"><div class="mole" data-index="7">🐭</div></div>
+                        <div class="hole"><div class="mole" data-index="8">🐭</div></div>
+                    </div>
+                    <p id="whac-message" class="mt-4 text-center text-lg font-bold"></p>
+                </div>
+            </div>
+
+            <!-- Memory Game -->
+            <div id="memory-game" class="game-content hidden">
+                <div class="text-center mb-6">
+                    <h4 class="text-2xl font-bold mb-1">Memory Game</h4>
+                    <p class="text-gray-400 text-sm">Match all the pairs to win!</p>
+                </div>
+                <div class="flex flex-col items-center gap-4">
+                    <button onclick="startMemoryGame()" class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold">Start Game</button>
+                    <div class="flex justify-between w-full max-w-md px-4">
+                        <span>Pairs Found: <span id="memory-score">0</span></span>
+                        <span>Moves: <span id="memory-moves">0</span></span>
+                    </div>
+                    <div id="memory-game-grid" class="w-full max-w-md"></div>
+                    <p id="memory-message" class="mt-4 text-center text-lg font-bold"></p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="py-8 border-t border-gray-800 text-center text-gray-400">
+    <p>&copy; 2025 WaryWEB. All Rights Reserved.</p>
+</footer>
+
+<script>
+    // --- Global Clock + Date ---
+    function updateTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${hours}:${minutes}`;
+      const month = now.toLocaleString('default', { month: 'short' });
+      const day = now.getDate();
+      document.getElementById('date').textContent = `${month} ${day}, ${now.getFullYear()}`;
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // --- Fade-in scroll animation ---
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add("show");
+      });
+    }, { threshold: 0.2 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // --- Game Tab Logic ---
+    let currentGame = 'minesweeper'; // Keep track of the current game
+
+    function showGame(gameId) {
+      document.querySelectorAll('.game-tab').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.game-tab[onclick="showGame('${gameId}')"]`).classList.add('active');
+      document.querySelectorAll('.game-content').forEach(content => content.classList.add('hidden'));
+      document.getElementById(gameId).classList.remove('hidden');
+
+      // Reset games when switching tabs
+      if (gameId === 'minesweeper') startGame('easy');
+      if (gameId === 'whac-a-mole') resetWhacAMole();
+      if (gameId === 'memory-game') startMemoryGame();
+      currentGame = gameId;
+    }
+
+    // --- Minesweeper Game Logic ---
+    const minesweeperGrid = document.getElementById('minesweeper-grid');
+    let boardSize, numMines, board, uncoveredCount, isGameOver, gameTimer, timerSeconds;
+
+    function startGame(difficulty) {
+      minesweeperGrid.innerHTML = '';
+      isGameOver = false;
+      uncoveredCount = 0;
+      document.getElementById('minesweeper-message').textContent = '';
+
+      // Set board size and mine count based on difficulty
+      if (difficulty === 'easy') {
+        boardSize = 8;
+        numMines = 10;
+      } else if (difficulty === 'medium') {
+        boardSize = 12;
+        numMines = 30;
+      } else { // hard
+        boardSize = 16;
+        numMines = 60;
+      }
+
+      document.getElementById('mines-count').textContent = numMines;
+      document.getElementById('time-count').textContent = 0;
+
+      // Create the grid dynamically with CSS Grid
+      minesweeperGrid.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
+      minesweeperGrid.style.width = `${boardSize * 30 + (boardSize * 2)}px`;
+
+      board = Array(boardSize).fill(null).map(() => Array(boardSize).fill({
+        isMine: false,
+        isUncovered: false,
+        isFlagged: false,
+        adjacentMines: 0
+      }));
+
+      // Place mines randomly
+      let minesPlaced = 0;
+      while (minesPlaced < numMines) {
+        const row = Math.floor(Math.random() * boardSize);
+        const col = Math.floor(Math.random() * boardSize);
+        if (!board[row][col].isMine) {
+          board[row][col] = { ...board[row][col], isMine: true };
+          minesPlaced++;
+        }
+      }
+
+      // Calculate adjacent mine counts
+      for (let r = 0; r < boardSize; r++) {
+        for (let c = 0; c < boardSize; c++) {
+          if (!board[r][c].isMine) {
+            let count = 0;
+            for (let i = -1; i <= 1; i++) {
+              for (let j = -1; j <= 1; j++) {
+                if (r + i >= 0 && r + i < boardSize && c + j >= 0 && c + j < boardSize && board[r + i][c + j].isMine) {
+                  count++;
+                }
+              }
+            }
+            board[r][c] = { ...board[r][c], adjacentMines: count };
+          }
+        }
+      }
+
+      // Render initial grid
+      for (let r = 0; r < boardSize; r++) {
+        for (let c = 0; c < boardSize; c++) {
+          const cell = document.createElement('div');
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          cell.addEventListener('click', handleMinesweeperClick);
+          cell.addEventListener('contextmenu', handleMinesweeperRightClick);
+          minesweeperGrid.appendChild(cell);
+        }
+      }
+
+      // Start timer
+      clearInterval(gameTimer);
+      timerSeconds = 0;
+      gameTimer = setInterval(() => {
+        timerSeconds++;
+        document.getElementById('time-count').textContent = timerSeconds;
+      }, 1000);
+    }
+
+    // New function to restart the game
+    function restartMinesweeper() {
+      startGame(currentGame);
+    }
+
+    function handleMinesweeperClick(event) {
+      if (isGameOver) return;
+      const row = parseInt(event.target.dataset.row);
+      const col = parseInt(event.target.dataset.col);
+      revealCell(row, col);
+      checkWinCondition();
+    }
+
+    function handleMinesweeperRightClick(event) {
+      event.preventDefault();
+      if (isGameOver) return;
+      const row = parseInt(event.target.dataset.row);
+      const col = parseInt(event.target.dataset.col);
+      if (!board[row][col].isUncovered) {
+        board[row][col].isFlagged = !board[row][col].isFlagged;
+        event.target.textContent = board[row][col].isFlagged ? '🚩' : '';
+      }
+    }
+
+    function revealCell(row, col) {
+      if (isGameOver || row < 0 || row >= boardSize || col < 0 || col >= boardSize || board[row][col].isUncovered || board[row][col].isFlagged) {
+        return;
+      }
+
+      const cellData = board[row][col];
+      const cellElement = minesweeperGrid.children[row * boardSize + col];
+
+      cellData.isUncovered = true;
+      uncoveredCount++;
+      cellElement.classList.add('uncovered');
+
+      if (cellData.isMine) {
+        cellElement.innerHTML = '💣';
+        endGame(false);
+        return;
+      }
+
+      if (cellData.adjacentMines > 0) {
+        cellElement.textContent = cellData.adjacentMines;
+      } else {
+        // If no adjacent mines, automatically uncover neighbors
+        for (let i = -1; i <= 1; i++) {
+          for (let j = -1; j <= 1; j++) {
+            revealCell(row + i, col + j);
+          }
+        }
+      }
+    }
+
+    function checkWinCondition() {
+      if (uncoveredCount === (boardSize * boardSize) - numMines) {
+        endGame(true);
+      }
+    }
+
+    function endGame(isWin) {
+      isGameOver = true;
+      clearInterval(gameTimer);
+      document.getElementById('minesweeper-message').textContent = isWin ? 'You Win!' : 'Game Over!';
+      if (!isWin) {
+        for (let r = 0; r < boardSize; r++) {
+          for (let c = 0; c < boardSize; c++) {
+            const cell = minesweeperGrid.children[r * boardSize + c];
+            if (board[r][c].isMine) {
+              cell.classList.add('uncovered', 'bomb');
+              cell.textContent = '💣';
+            }
+          }
+        }
+      }
+    }
+
+    // --- Whac-A-Mole Game Logic ---
+    const moles = document.querySelectorAll('.mole');
+    const whacScoreDisplay = document.getElementById('whac-score');
+    const whacTimeDisplay = document.getElementById('whac-time');
+    const whacMessage = document.getElementById('whac-message');
+    let score = 0;
+    let time = 30;
+    let timerId = null;
+    let popUpIntervalId = null;
+    let lastHole;
+
+    function randomHole() {
+      const holes = Array.from(moles).map(mole => mole.parentElement);
+      const index = Math.floor(Math.random() * holes.length);
+      const hole = holes[index];
+      if (hole === lastHole) {
+        return randomHole();
+      }
+      lastHole = hole;
+      return hole;
+    }
+
+    function popUp() {
+      const hole = randomHole();
+      const mole = hole.querySelector('.mole');
+      mole.classList.add('up');
+      const popTime = Math.random() * 1000 + 500;
+      setTimeout(() => {
+        mole.classList.remove('up');
+        if (!timerId) return;
+        popUpIntervalId = setTimeout(popUp, popTime);
+      }, popTime);
+    }
+
+    function whac(event) {
+      const moleElement = event.currentTarget.querySelector('.mole');
+      if (!moleElement.classList.contains('up') || !timerId) return;
+      score++;
+      whacScoreDisplay.textContent = score;
+      moleElement.classList.remove('up');
+    }
+
+    // Attach the event listener to the holes, not the moles
+    document.querySelectorAll('.hole').forEach(hole => hole.addEventListener('click', whac));
+
+    function startGameTimer() {
+      timerId = setInterval(() => {
+        time--;
+        whacTimeDisplay.textContent = time;
+        if (time <= 0) {
+          clearInterval(timerId);
+          clearTimeout(popUpIntervalId);
+          timerId = null;
+          whacMessage.textContent = `Game Over! Your final score is ${score}.`;
+          document.getElementById('whac-start-btn').classList.remove('hidden');
+        }
+      }, 1000);
+    }
+
+    function startWhacAMole() {
+      score = 0;
+      time = 30;
+      whacScoreDisplay.textContent = score;
+      whacTimeDisplay.textContent = time;
+      whacMessage.textContent = '';
+      document.getElementById('whac-start-btn').classList.add('hidden');
+      startGameTimer();
+      popUp();
+    }
+
+    function resetWhacAMole() {
+      clearInterval(timerId);
+      clearTimeout(popUpIntervalId);
+      timerId = null;
+      score = 0;
+      time = 30;
+      whacScoreDisplay.textContent = score;
+      whacTimeDisplay.textContent = time;
+      whacMessage.textContent = '';
+      moles.forEach(mole => mole.classList.remove('up'));
+      document.getElementById('whac-start-btn').classList.remove('hidden');
+    }
+
+    // --- Memory Game Logic ---
+    const memoryGrid = document.getElementById('memory-game-grid');
+    const memoryScoreDisplay = document.getElementById('memory-score');
+    const memoryMovesDisplay = document.getElementById('memory-moves');
+    const memoryMessage = document.getElementById('memory-message');
+
+    const icons = ['✨', '🎈', '🎉', '🎁', '🚀', '⭐', '🌈', '💡'];
+    let firstCard = null;
+    let secondCard = null;
+    let lockBoard = false;
+    let pairsFound = 0;
+    let moves = 0;
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function createBoard() {
+      memoryGrid.innerHTML = '';
+      const boardIcons = [...icons, ...icons];
+      shuffle(boardIcons);
+
+      memoryGrid.style.gridTemplateColumns = `repeat(4, 1fr)`;
+      memoryGrid.style.width = `440px`;
+
+      boardIcons.forEach(icon => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.icon = icon;
+        card.innerHTML = `
+          <div class="card-face card-cover">
+            <i data-lucide="help-circle" class="w-10 h-10"></i>
+          </div>
+          <div class="card-face card-content">
+            <span>${icon}</span>
+          </div>
+        `;
+        card.addEventListener('click', flipCard);
+        memoryGrid.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function flipCard() {
+      if (lockBoard) return;
+      if (this === firstCard) return;
+
+      this.classList.add('flipped');
+      moves++;
+      memoryMovesDisplay.textContent = moves;
+
+      if (!firstCard) {
+        firstCard = this;
+        return;
+      }
+
+      secondCard = this;
+      checkForMatch();
+    }
+
+    function checkForMatch() {
+      let isMatch = firstCard.dataset.icon === secondCard.dataset.icon;
+      isMatch ? disableCards() : unflipCards();
+    }
+
+    function disableCards() {
+      firstCard.removeEventListener('click', flipCard);
+      secondCard.removeEventListener('click', flipCard);
+      firstCard.classList.add('match');
+      secondCard.classList.add('match');
+      pairsFound++;
+      memoryScoreDisplay.textContent = pairsFound;
+      resetBoard();
+      if (pairsFound === icons.length) {
+        memoryMessage.textContent = `You won in ${moves} moves!`;
+      }
+    }
+
+    function unflipCards() {
+      lockBoard = true;
+      setTimeout(() => {
+        firstCard.classList.remove('flipped');
+        secondCard.classList.remove('flipped');
+        resetBoard();
+      }, 1000);
+    }
+
+    function resetBoard() {
+      [firstCard, secondCard, lockBoard] = [null, null, false];
+    }
+
+    function startMemoryGame() {
+      pairsFound = 0;
+      moves = 0;
+      memoryScoreDisplay.textContent = pairsFound;
+      memoryMovesDisplay.textContent = moves;
+      memoryMessage.textContent = '';
+      createBoard();
+    }
+
+    // --- Initial Setup ---
+    document.addEventListener('DOMContentLoaded', () => {
+      updateTime();
+      showGame('minesweeper');
+    });
+
+</script>
+
+</body>
+</html>

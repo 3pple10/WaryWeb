@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WaryWEB - Utilities Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        body {
+          font-family: 'Inter', sans-serif;
+          background-color: #0a0a0a;
+          background-image: radial-gradient(circle at top right, rgba(121, 68, 255, 0.15), transparent 40%),
+                            radial-gradient(circle at bottom left, rgba(0, 122, 255, 0.15), transparent 50%);
+        }
+
+        .card-glass {
+          background: rgba(23, 23, 23, 0.65);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Card Hover Effect */
+        .card-hover {
+          transition: all 0.35s ease;
+        }
+        .card-hover:hover {
+          transform: scale(1.03);
+        }
+
+        /* Utility Card Style (Replaces game-card for a unified look) */
+        .utility-card {
+          transition: all 0.35s ease;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          background: #fff;
+          color: #000;
+        }
+        .utility-card:hover {
+          transform: scale(1.03);
+          border-color: rgba(255, 255, 255, 0.25);
+          box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
+          background: #e5e5e5; /* ash/gray on hover */
+          color: #000;
+        }
+
+        .nav-link {
+          position: relative;
+        }
+        .nav-link::after {
+          content: "";
+          position: absolute;
+          width: 0%;
+          height: 2px;
+          left: 0;
+          bottom: -3px;
+          background: #fff;
+          transition: 0.3s;
+        }
+        .nav-link:hover::after {
+          width: 100%;
+        }
+
+        /* Hero Button */
+        .hero-btn {
+          transition: all 0.3s ease;
+        }
+        .hero-btn:hover {
+          transform: scale(1.05);
+          box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Fade-in animation */
+        .fade-in {
+          opacity: 0;
+          transform: translateY(30px);
+          transition: opacity 1s ease, transform 1s ease;
+        }
+        .fade-in.show {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        /* Stopwatch glow effect */
+        .stopwatch-glow {
+          text-shadow: 0 0 8px rgba(0, 255, 255, 0.8), 0 0 15px rgba(0, 255, 255, 0.6);
+        }
+
+        /* For active utility buttons */
+        .utility-button.active {
+          background-color: #555 !important;
+          border-color: #888 !important;
+        }
+    </style>
+</head>
+<body class="text-white">
+
+<header class="fixed top-0 left-0 w-full bg-black/50 backdrop-blur-md border-b border-gray-800 z-50">
+    <div class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+        <a href="index.html" class="text-2xl font-black">WaryWEB</a>
+        <nav class="flex gap-8 text-gray-300">
+            <a href="index.html#games" class="nav-link hover:text-white">Games</a>
+            <a href="utilities.html" class="nav-link hover:text-white text-white">Utilities</a>
+            <a href="index.html#about" class="nav-link hover:text-white">About</a>
+        </nav>
+        <div class="card-glass flex items-center gap-4 px-4 py-2 rounded-lg">
+            <div id="clock" class="text-lg font-bold">10:59</div>
+            <div class="border-l border-gray-600 h-6"></div>
+            <div id="date" class="text-sm text-gray-300">Dec, 2025</div>
+        </div>
+    </div>
+</header>
+
+<section id="utilities" class="py-24 px-6 min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-black/30 to-black/70">
+    <div class="max-w-6xl w-full mx-auto text-center mb-12">
+        <h3 class="text-4xl font-bold">Free Utilities</h3>
+        <p class="text-gray-400 mt-2">Helpful tools to get things done, all in one place.</p>
+    </div>
+
+    <div class="max-w-5xl w-full mx-auto p-6 md:p-12 card-glass rounded-2xl fade-in">
+        <div class="flex flex-wrap justify-center gap-4 mb-8">
+            <button onclick="showUtility('calculator')" class="utility-button px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700 active">Calculator</button>
+            <button onclick="showUtility('timer')" class="utility-button px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700">Timer</button>
+            <button onclick="showUtility('stopwatch')" class="utility-button px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700">Stopwatch</button>
+            <button onclick="showUtility('qr-generator')" class="utility-button px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700">QR Code</button>
+            <button onclick="showUtility('url-shortener')" class="utility-button px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700">URL Shortener</button>
+        </div>
+
+        <div id="utility-container">
+
+            <div id="calculator" class="utility-content">
+                <div class="text-center mb-6">
+                    <h4 class="text-2xl font-bold mb-1">Calculator</h4>
+                    <p class="text-gray-400 text-sm">A simple and advanced calculator.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-gray-900 rounded-xl p-6 shadow-lg">
+                        <div id="calc-display" class="bg-gray-800 text-white text-3xl font-mono text-right p-4 mb-4 rounded-lg overflow-x-auto whitespace-nowrap">0</div>
+                        <div class="grid grid-cols-5 gap-2">
+                            <button onclick="clearDisplay()" class="col-span-1 bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-xl font-bold text-lg">C</button>
+                            <button onclick="backspace()" class="col-span-1 bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-xl font-bold text-lg">←</button>
+                            <button onclick="appendToDisplay('**')" class="bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-xl font-bold text-lg">^</button>
+                            <button onclick="calculateAdvanced('Math.sqrt(')" class="bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-xl font-bold text-lg">√</button>
+                            <button onclick="appendToDisplay('/')" class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-xl font-bold text-lg">/</button>
+
+                            <button onclick="calculateAdvanced('Math.sin(')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">sin</button>
+                            <button onclick="calculateAdvanced('Math.cos(')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">cos</button>
+                            <button onclick="calculateAdvanced('Math.tan(')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">tan</button>
+                            <button onclick="appendToDisplay('(')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">(</button>
+                            <button onclick="appendToDisplay('*')" class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-xl font-bold text-lg">*</button>
+
+                            <button onclick="appendToDisplay('7')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">7</button>
+                            <button onclick="appendToDisplay('8')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">8</button>
+                            <button onclick="appendToDisplay('9')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">9</button>
+                            <button onclick="appendToDisplay(')')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">)</button>
+                            <button onclick="appendToDisplay('-')" class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-xl font-bold text-lg">-</button>
+
+                            <button onclick="appendToDisplay('4')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">4</button>
+                            <button onclick="appendToDisplay('5')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">5</button>
+                            <button onclick="appendToDisplay('6')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">6</button>
+                            <button onclick="calculateAdvanced('**2')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">x²</button>
+                            <button onclick="appendToDisplay('+')" class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-xl font-bold text-lg">+</button>
+
+                            <button onclick="appendToDisplay('1')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">1</button>
+                            <button onclick="appendToDisplay('2')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">2</button>
+                            <button onclick="appendToDisplay('3')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">3</button>
+                            <button onclick="appendToDisplay('.')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">.</button>
+                            <button onclick="calculateResult()" class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-xl font-bold text-lg">=</button>
+
+                            <button onclick="appendToDisplay('0')" class="col-span-2 bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">0</button>
+                        </div>
+                    </div>
+                    <div class="bg-gray-900 rounded-xl p-6 shadow-lg flex flex-col">
+                        <h5 class="text-xl font-semibold mb-4 text-center">History</h5>
+                        <div id="calc-history" class="text-gray-400 text-sm overflow-y-auto max-h-64 space-y-2">
+                            <p class="text-center">No history yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="timer" class="utility-content hidden">
+                <div class="text-center mb-6">
+                    <h4 class="text-2xl font-bold mb-1">Timer</h4>
+                    <p class="text-gray-400 text-sm">Set a countdown for any task.</p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="text-7xl md:text-8xl font-mono mb-8 text-white" id="timer-display">00:00</div>
+                    <div class="flex gap-4 mb-6">
+                        <input type="number" id="timer-minutes" placeholder="Min" class="w-24 px-4 py-2 rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-purple-600" min="0" value="5">
+                        <input type="number" id="timer-seconds" placeholder="Sec" class="w-24 px-4 py-2 rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-purple-600" min="0" max="59" value="0">
+                    </div>
+                    <div class="flex gap-4">
+                        <button onclick="startTimer()" id="timer-start-btn" class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold">Start</button>
+                        <button onclick="pauseTimer()" id="timer-pause-btn" class="px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-semibold hidden">Pause</button>
+                        <button onclick="resetTimer()" class="px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-semibold">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="stopwatch" class="utility-content hidden">
+                <div class="text-center mb-6">
+                    <h4 class="text-2xl font-bold mb-1">Stopwatch</h4>
+                    <p class="text-gray-400 text-sm">Measure time with a glowing nano-second display.</p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="text-7xl md:text-8xl font-mono mb-8 text-cyan-400 stopwatch-glow" id="stopwatch-display">00:00:00.000</div>
+                    <div class="flex gap-4">
+                        <button onclick="startStopwatch()" id="stopwatch-start-btn" class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold">Start</button>
+                        <button onclick="pauseStopwatch()" id="stopwatch-pause-btn" class="px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-semibold hidden">Pause</button>
+                        <button onclick="resetStopwatch()" class="px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-semibold">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="qr-generator" class="utility-content hidden">
+                <div class="text-center mb-6">
+                    <h4 class="text-2xl font-bold mb-1">QR Code Generator</h4>
+                    <p class="text-gray-400 text-sm">Create a QR code from any text or link.</p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <input type="text" id="qr-input" placeholder="Enter text or URL" class="w-full max-w-lg px-4 py-2 rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-purple-600 mb-6">
+                    <button onclick="generateQRCode()" class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold mb-4">Generate QR Code</button>
+                    <div id="qr-output" class="p-4 rounded-xl bg-white flex items-center justify-center">
+                    </div>
+                </div>
+            </div>
+
+            <div id="url-shortener" class="utility-content hidden">
+                <div class="text-center mb-6">
+                    <h4 class="text-2xl font-bold mb-1">URL Shortener</h4>
+                    <p class="text-gray-400 text-sm">A simple, local URL shortener.</p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <input type="url" id="long-url-input" placeholder="Paste a long URL here" class="w-full max-w-lg px-4 py-2 rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-purple-600 mb-4">
+                    <button onclick="shortenUrl()" class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold mb-4">Shorten URL</button>
+                    <div id="short-url-output" class="text-center w-full max-w-lg hidden">
+                        <p class="text-gray-400">Your shortened URL:</p>
+                        <div class="flex items-center justify-center gap-2 mt-2">
+                            <input type="text" readonly id="short-url-display" class="w-full px-4 py-2 rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none cursor-pointer">
+                            <button onclick="copyToClipboard()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-xl text-white font-semibold">Copy</button>
+                        </div>
+                        <p class="text-red-400 text-sm mt-2" id="copy-message"></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<footer class="py-8 border-t border-gray-800 text-center text-gray-400">
+    <p>&copy; 2025 WaryWEB. All Rights Reserved.</p>
+</footer>
+
+<script>
+    // Global variables for utility functions
+    let timerInterval, stopwatchInterval;
+    let timerTime = 0;
+    let stopwatchStartTime = 0;
+    let stopwatchElapsedTime = 0;
+    const urlMap = {};
+
+    // --- Utility Tab/Section Logic ---
+    // A simple function to show the selected utility and hide others.
+    function showUtility(utilityId) {
+      document.querySelectorAll('.utility-button').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.utility-button[onclick="showUtility('${utilityId}')"]`).classList.add('active');
+
+      document.querySelectorAll('.utility-content').forEach(content => content.classList.add('hidden'));
+      document.getElementById(utilityId).classList.remove('hidden');
+    }
+
+    // --- Clock + Date ---
+    function updateTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${hours}:${minutes}`;
+      const month = now.toLocaleString('default', { month: 'short' });
+      document.getElementById('date').textContent = `${month}, ${now.getFullYear()}`;
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // --- Fade-in scroll animation ---
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add("show");
+      });
+    }, { threshold: 0.2 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // --- Calculator Logic ---
+    let display = '0';
+    let history = [];
+    const historyLimit = 10;
+
+    function updateDisplay() {
+      document.getElementById('calc-display').textContent = display;
+    }
+
+    function addToHistory(expression, result) {
+      history.unshift({ expression, result });
+      if (history.length > historyLimit) {
+        history.pop();
+      }
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const historyDiv = document.getElementById('calc-history');
+      if (history.length === 0) {
+        historyDiv.innerHTML = '<p class="text-center">No history yet.</p>';
+        return;
+      }
+      historyDiv.innerHTML = history.map(item => `
+        <div class="p-2 border-b border-gray-700 last:border-b-0">
+          <p class="text-sm text-gray-300">${item.expression}</p>
+          <p class="text-lg text-white font-bold">${item.result}</p>
+        </div>
+      `).join('');
+    }
+
+    function appendToDisplay(value) {
+      if (display === '0') {
+        display = value;
+      } else {
+        display += value;
+      }
+      updateDisplay();
+    }
+
+    function calculateAdvanced(func) {
+      // Special handling for function calls
+      // If the display has a value, wrap it inside the function call
+      if (display !== '0' && display !== '') {
+          display = `${func}${display})`;
+      } else {
+          display += func;
+      }
+      updateDisplay();
+    }
+
+    function clearDisplay() {
+      display = '0';
+      updateDisplay();
+    }
+
+    function backspace() {
+      display = display.slice(0, -1);
+      if (display === '') {
+        display = '0';
+      }
+      updateDisplay();
+    }
+
+    function calculateResult() {
+      let result;
+      const expression = display;
+      try {
+        // Replace custom operators with valid JS ones
+        let cleanedExpression = expression.replace(/√/g, 'Math.sqrt(').replace(/\^/g, '**');
+
+        // Attempt to evaluate the expression
+        result = eval(cleanedExpression);
+
+        // Handle special cases and floating point issues
+        if (typeof result === 'number' && !isFinite(result)) {
+          result = 'Error';
+        } else {
+          result = result.toFixed(10).replace(/\.?0+$/, ''); // Clean up trailing zeros
+        }
+      } catch (e) {
+        result = 'Error';
+      }
+
+      addToHistory(expression, result);
+      display = result.toString();
+      updateDisplay();
+    }
+
+    // --- Timer Logic ---
+    function updateTimerDisplay() {
+      const minutes = Math.floor(timerTime / 60);
+      const seconds = timerTime % 60;
+      const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      document.getElementById('timer-display').textContent = formattedTime;
+    }
+
+    function startTimer() {
+      const minutes = parseInt(document.getElementById('timer-minutes').value) || 0;
+      const seconds = parseInt(document.getElementById('timer-seconds').value) || 0;
+      timerTime = minutes * 60 + seconds;
+      if (timerTime <= 0) return;
+
+      // Show/hide buttons
+      document.getElementById('timer-start-btn').classList.add('hidden');
+      document.getElementById('timer-pause-btn').classList.remove('hidden');
+
+      timerInterval = setInterval(() => {
+        if (timerTime <= 0) {
+          clearInterval(timerInterval);
+          document.getElementById('timer-display').textContent = "Time's Up!";
+          document.getElementById('timer-start-btn').classList.remove('hidden');
+          document.getElementById('timer-pause-btn').classList.add('hidden');
+          return;
+        }
+        timerTime--;
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(timerInterval);
+      document.getElementById('timer-start-btn').classList.remove('hidden');
+      document.getElementById('timer-pause-btn').classList.add('hidden');
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      document.getElementById('timer-display').textContent = "00:00";
+      document.getElementById('timer-start-btn').classList.remove('hidden');
+      document.getElementById('timer-pause-btn').classList.add('hidden');
+      document.getElementById('timer-minutes').value = 5;
+      document.getElementById('timer-seconds').value = 0;
+      timerTime = 0;
+    }
+
+    // --- Stopwatch Logic ---
+    function updateStopwatchDisplay() {
+      const totalMilliseconds = Date.now() - stopwatchStartTime + stopwatchElapsedTime;
+      const minutes = Math.floor(totalMilliseconds / 60000);
+      const seconds = Math.floor((totalMilliseconds % 60000) / 1000);
+      const milliseconds = totalMilliseconds % 1000;
+      const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(3, '0')}`;
+      document.getElementById('stopwatch-display').textContent = formattedTime;
+    }
+
+    function startStopwatch() {
+      stopwatchStartTime = Date.now();
+      document.getElementById('stopwatch-start-btn').classList.add('hidden');
+      document.getElementById('stopwatch-pause-btn').classList.remove('hidden');
+      stopwatchInterval = setInterval(updateStopwatchDisplay, 1);
+    }
+
+    function pauseStopwatch() {
+      clearInterval(stopwatchInterval);
+      stopwatchElapsedTime += Date.now() - stopwatchStartTime;
+      document.getElementById('stopwatch-start-btn').classList.remove('hidden');
+      document.getElementById('stopwatch-pause-btn').classList.add('hidden');
+    }
+
+    function resetStopwatch() {
+      clearInterval(stopwatchInterval);
+      stopwatchStartTime = 0;
+      stopwatchElapsedTime = 0;
+      document.getElementById('stopwatch-display').textContent = "00:00:00.000";
+      document.getElementById('stopwatch-start-btn').classList.remove('hidden');
+      document.getElementById('stopwatch-pause-btn').classList.add('hidden');
+    }
+
+    // --- QR Code Generator Logic ---
+    let qrCodeInstance = null;
+
+    function generateQRCode() {
+      const qrText = document.getElementById('qr-input').value.trim();
+      const qrOutputDiv = document.getElementById('qr-output');
+
+      if (qrText === "") {
+          qrOutputDiv.innerHTML = '<p class="text-sm text-gray-400">Please enter text or a URL.</p>';
+          return;
+      }
+
+      // Clear previous QR code
+      qrOutputDiv.innerHTML = '';
+
+      // Create new QR code instance if it doesn't exist, or just update it
+      if (!qrCodeInstance) {
+          qrCodeInstance = new QRCode(qrOutputDiv, {
+              text: qrText,
+              width: 150,
+              height: 150,
+              colorDark: "#000000",
+              colorLight: "#ffffff",
+              correctLevel: QRCode.CorrectLevel.H
+          });
+      } else {
+          qrCodeInstance.makeCode(qrText);
+      }
+    }
+
+    // --- URL Shortener Logic ---
+    function generateRandomString(length) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let result = '';
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+    function shortenUrl() {
+      const longUrl = document.getElementById('long-url-input').value.trim();
+      const shortUrlDisplay = document.getElementById('short-url-display');
+      const outputContainer = document.getElementById('short-url-output');
+
+      if (!longUrl) {
+        shortUrlDisplay.value = 'Please enter a URL.';
+        outputContainer.classList.remove('hidden');
+        return;
+      }
+
+      // A simple check to ensure it's a valid URL format
+      try {
+        new URL(longUrl);
+      } catch (_) {
+        shortUrlDisplay.value = 'Please enter a valid URL.';
+        outputContainer.classList.remove('hidden');
+        return;
+      }
+
+      // Generate a unique short key
+      let shortKey;
+      do {
+        shortKey = generateRandomString(6);
+      } while (urlMap[shortKey]);
+
+      urlMap[shortKey] = longUrl;
+
+      // Construct the local shortened URL
+      const shortenedUrl = `${window.location.href.split('#')[0].split('?')[0]}?s=${shortKey}`;
+      shortUrlDisplay.value = shortenedUrl;
+      outputContainer.classList.remove('hidden');
+    }
+
+    function copyToClipboard() {
+      const shortUrlInput = document.getElementById('short-url-display');
+      shortUrlInput.select();
+      document.execCommand('copy');
+
+      const copyMessage = document.getElementById('copy-message');
+      copyMessage.textContent = 'Copied!';
+      setTimeout(() => {
+        copyMessage.textContent = '';
+      }, 2000);
+    }
+
+    // Handle URL redirection for the shortener
+    function handleUrlRedirection() {
+      const params = new URLSearchParams(window.location.search);
+      const shortKey = params.get('s');
+      if (shortKey && urlMap[shortKey]) {
+        window.location.href = urlMap[shortKey];
+      }
+    }
+
+    // Initial setup when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      updateTime();
+      showUtility('calculator'); // Show the calculator by default
+      handleUrlRedirection();
+      renderHistory(); // Initial render of history
+    });
+
+</script>
+
+</body>
+</html>

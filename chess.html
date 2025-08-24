@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WaryWEB - Chess</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #0a0a0a;
+        /* Subtle gradient background from the hub page */
+        background-image: radial-gradient(circle at top right, rgba(121, 68, 255, 0.15), transparent 40%),
+                          radial-gradient(circle at bottom left, rgba(0, 122, 255, 0.15), transparent 50%);
+        overflow-y: auto;
+    }
+
+    /* Glassmorphism effect for UI panels */
+    .card-glass {
+        background: rgba(23, 23, 23, 0.6);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    .card-glass-lighter {
+        background: rgba(33, 33, 33, 0.6);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Responsive Chessboard */
+    #chessboard {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: repeat(8, 1fr);
+        width: 100%;
+        max-width: 600px; /* Base size for mobile */
+        aspect-ratio: 1 / 1;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+
+    @media (min-width: 768px) {
+      #chessboard {
+        max-width: 700px;
+      }
+    }
+
+    .square {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: clamp(20px, 6vmin, 50px); /* Responsive font size for pieces */
+        position: relative;
+    }
+
+    .square.light { background-color: #f0d9b5; }
+    .square.dark { background-color: #b58863; }
+
+    .piece { cursor: pointer; user-select: none; }
+    .white-piece { color: #ffffff; text-shadow: 0 0 5px #000; }
+    .black-piece { color: #1a1a1a; }
+
+    /* UI feedback styles */
+    .selected {
+        background-color: rgba(255, 255, 0, 0.5) !important;
+    }
+
+    .valid-move::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 35%;
+        height: 35%;
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .valid-capture {
+        background-color: rgba(255, 0, 0, 0.4) !important;
+
+    }
+
+    .in-check {
+        color: #ef4444; /* Red-500 */
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+  </style>
+</head>
+<body class="text-white flex flex-col items-center min-h-screen p-4">
+
+<div class="w-full max-w-7xl mx-auto">
+  <!-- Header Section -->
+  <header class="flex flex-col sm:flex-row justify-between items-center mb-8 px-4">
+    <div class="text-center sm:text-left mb-4 sm:mb-0">
+      <a href="index.html" class="hover:opacity-80 transition-opacity">
+        <h1 class="text-4xl font-black tracking-wider">WaryWEB</h1>
+        <p class="text-sm text-gray-400">Now Playing: Chess</p>
+      </a>
+    </div>
+    <div class="flex items-center gap-4">
+      <!-- Back to Hub Button -->
+      <a href="#" class="card-glass flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors">
+        <i data-lucide="home" class="w-5 h-5"></i>
+        <span>Back to Hub</span>
+      </a>
+      <!-- Clock and Date -->
+      <div class="card-glass hidden md:flex items-center gap-4 px-4 py-2 rounded-lg">
+        <div id="clock" class="text-2xl font-bold tracking-widest">10:59</div>
+        <div class="border-l border-gray-600 h-8"></div>
+        <div id="date" class="text-md text-gray-300">Dec, 2025</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Game Area -->
+  <main class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start justify-center p-4">
+    <!-- Chessboard Container -->
+    <div class="lg:col-span-2 flex items-center justify-center">
+      <div id="chessboard" class="shadow-2xl"></div>
+    </div>
+
+    <!-- Game Info Panel -->
+    <div class="card-glass p-6 rounded-lg w-full">
+      <h2 class="text-2xl font-bold border-b border-white/20 pb-2 mb-4">Game Status</h2>
+
+      <div id="turn-indicator" class="text-xl mb-4 p-3 bg-black/20 rounded-md text-center">
+        White's Turn
+      </div>
+
+      <div id="status-message" class="text-lg font-semibold min-h-[28px] mb-4 text-center">
+        &nbsp; <!-- Placeholder for check/checkmate messages -->
+      </div>
+
+      <div class="mb-4">
+        <h3 class="font-bold mb-2">Captured by White:</h3>
+        <div id="captured-by-white" class="flex flex-wrap gap-2 min-h-[36px] bg-black/20 p-2 rounded-md"></div>
+      </div>
+
+      <div class="mb-6">
+        <h3 class="font-bold mb-2">Captured by Black:</h3>
+        <div id="captured-by-black" class="flex flex-wrap gap-2 min-h-[36px] bg-black/20 p-2 rounded-md"></div>
+      </div>
+
+      <button id="reset-button" class="w-full bg-purple-600 hover:bg-purple-700 transition-colors font-bold py-3 rounded-lg flex items-center justify-center gap-2">
+        <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+        <span>New Game</span>
+      </button>
+    </div>
+  </main>
+</div>
+
+<script>
+  // --- UTILITY AND SETUP ---
+  lucide.createIcons();
+
+  function updateTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const month = now.toLocaleString('default', { month: 'short' });
+      const year = now.getFullYear();
+
+      const clockEl = document.getElementById('clock');
+      const dateEl = document.getElementById('date');
+      if (clockEl) clockEl.textContent = `${hours}:${minutes}`;
+      if (dateEl) dateEl.textContent = `${month}, ${year}`;
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+
+  // --- CHESS GAME LOGIC ---
+  const chessboard = document.getElementById('chessboard');
+  const turnIndicator = document.getElementById('turn-indicator');
+  const statusMessage = document.getElementById('status-message');
+  const capturedByWhiteEl = document.getElementById('captured-by-white');
+  const capturedByBlackEl = document.getElementById('captured-by-black');
+  const resetButton = document.getElementById('reset-button');
+
+  const PIECES = {
+      'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
+      'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
+  };
+
+  let board = [];
+  let currentPlayer = 'white';
+  let selectedPiece = null; // { row, col, piece }
+  let validMoves = [];
+  let capturedByWhite = [];
+  let capturedByBlack = [];
+  let isGameOver = false;
+  let moveHistory = [];
+
+  function initializeBoard() {
+      const initialBoard = [
+          ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+          ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+          [null, null, null, null, null, null, null, null],
+          [null, null, null, null, null, null, null, null],
+          [null, null, null, null, null, null, null, null],
+          [null, null, null, null, null, null, null, null],
+          ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+          ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+      ];
+      board = initialBoard.map(row => row.slice());
+      currentPlayer = 'white';
+      selectedPiece = null;
+      validMoves = [];
+      capturedByWhite = [];
+      capturedByBlack = [];
+      isGameOver = false;
+      moveHistory = [];
+      renderBoard();
+      updateStatus();
+  }
+
+  function renderBoard() {
+      chessboard.innerHTML = '';
+      for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+              const square = document.createElement('div');
+              square.dataset.row = r;
+              square.dataset.col = c;
+              square.classList.add('square', (r + c) % 2 === 0 ? 'light' : 'dark');
+
+              const pieceChar = board[r][c];
+              if (pieceChar) {
+                  const pieceEl = document.createElement('span');
+                  pieceEl.classList.add('piece');
+                  pieceEl.textContent = PIECES[pieceChar];
+                  const pieceColor = getPieceColor(pieceChar);
+                  pieceEl.classList.add(pieceColor === 'white' ? 'white-piece' : 'black-piece');
+                  square.appendChild(pieceEl);
+              }
+              chessboard.appendChild(square);
+          }
+      }
+      addSquareListeners();
+  }
+
+  function addSquareListeners() {
+      document.querySelectorAll('.square').forEach(square => {
+          square.addEventListener('click', handleSquareClick);
+      });
+  }
+
+  function handleSquareClick(event) {
+      if (isGameOver) return;
+
+      const square = event.currentTarget;
+      const row = parseInt(square.dataset.row);
+      const col = parseInt(square.dataset.col);
+      const piece = board[row][col];
+
+      // If a valid move is clicked
+      if (selectedPiece && validMoves.some(move => move[0] === row && move[1] === col)) {
+          movePiece(selectedPiece.row, selectedPiece.col, row, col);
+          return;
+      }
+
+      clearHighlights();
+
+      // If a piece of the current player is clicked
+      if (piece && getPieceColor(piece) === currentPlayer) {
+          selectedPiece = { row, col, piece };
+          validMoves = getValidMoves(piece, row, col);
+          highlightSelected(row, col);
+          highlightValidMoves(validMoves);
+      } else {
+          selectedPiece = null;
+          validMoves = [];
+      }
+  }
+
+  function movePiece(fromRow, fromCol, toRow, toCol) {
+      const capturedPiece = board[toRow][toCol];
+      if (capturedPiece) {
+          if (currentPlayer === 'white') capturedByWhite.push(capturedPiece);
+          else capturedByBlack.push(capturedPiece);
+      }
+
+      board[toRow][toCol] = board[fromRow][fromCol];
+      board[fromRow][fromCol] = null;
+
+      // Pawn Promotion
+      const piece = board[toRow][toCol];
+      if (piece.toLowerCase() === 'p' && (toRow === 0 || toRow === 7)) {
+          board[toRow][toCol] = currentPlayer === 'white' ? 'Q' : 'q';
+      }
+
+      currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
+      selectedPiece = null;
+      validMoves = [];
+      renderBoard();
+      updateStatus();
+  }
+
+  function updateStatus() {
+      turnIndicator.textContent = `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn`;
+
+      const kingInCheck = isKingInCheck(currentPlayer);
+      if (kingInCheck) {
+          statusMessage.textContent = "Check!";
+          statusMessage.classList.add('in-check');
+      } else {
+          statusMessage.textContent = '\u00A0'; // non-breaking space
+          statusMessage.classList.remove('in-check');
+      }
+
+      const hasValidMoves = getAllValidMoves(currentPlayer).length > 0;
+      if (!hasValidMoves) {
+          isGameOver = true;
+          if (kingInCheck) {
+              statusMessage.textContent = `Checkmate! ${currentPlayer === 'white' ? 'Black' : 'White'} wins!`;
+          } else {
+              statusMessage.textContent = "Stalemate! It's a draw.";
+          }
+          turnIndicator.textContent = "Game Over";
+      }
+
+      renderCapturedPieces();
+  }
+
+  function renderCapturedPieces() {
+      capturedByWhiteEl.innerHTML = capturedByWhite.map(p => `<span class="black-piece text-2xl">${PIECES[p]}</span>`).join('');
+      capturedByBlackEl.innerHTML = capturedByBlack.map(p => `<span class="white-piece text-2xl">${PIECES[p]}</span>`).join('');
+  }
+
+  // --- MOVE VALIDATION LOGIC ---
+
+  function getValidMoves(piece, row, col) {
+      const moves = getRawMoves(piece, row, col);
+      const color = getPieceColor(piece);
+
+      // Filter out moves that would leave the king in check
+      return moves.filter(move => {
+          const [toRow, toCol] = move;
+          const originalBoard = board.map(row => row.slice()); // Clone the board
+
+          // Temporarily make the move
+          const tempPiece = originalBoard[row][col];
+          originalBoard[toRow][toCol] = tempPiece;
+          originalBoard[row][col] = null;
+
+          const kingInCheckAfterMove = isKingInCheckOnBoard(originalBoard, color);
+          return !kingInCheckAfterMove;
+      });
+  }
+
+  function getRawMoves(piece, row, col) {
+      const color = getPieceColor(piece);
+      switch (piece.toLowerCase()) {
+          case 'p': return getPawnMoves(row, col, color);
+          case 'r': return getSlidingMoves(row, col, color, [[-1, 0], [1, 0], [0, -1], [0, 1]]);
+          case 'n': return getKnightMoves(row, col, color);
+          case 'b': return getSlidingMoves(row, col, color, [[-1, -1], [-1, 1], [1, -1], [1, 1]]);
+          case 'q': return getSlidingMoves(row, col, color, [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]]);
+          case 'k': return getKingMoves(row, col, color);
+          default: return [];
+      }
+  }
+
+  function getPawnMoves(r, c, color) {
+      const moves = [];
+      const dir = color === 'white' ? -1 : 1;
+      const startRow = color === 'white' ? 6 : 1;
+
+      // 1 square forward
+      if (isValid(r + dir, c) && !board[r + dir][c]) {
+          moves.push([r + dir, c]);
+          // 2 squares forward from start
+          if (r === startRow && !board[r + 2 * dir][c]) {
+              moves.push([r + 2 * dir, c]);
+          }
+      }
+      // Captures
+      [-1, 1].forEach(offset => {
+          if (isValid(r + dir, c + offset)) {
+              const target = board[r + dir][c + offset];
+              if (target && getPieceColor(target) !== color) {
+                  moves.push([r + dir, c + offset]);
+              }
+              // En passant (requires checking previous move, left out for simplicity)
+          }
+      });
+      return moves;
+  }
+
+  function getSlidingMoves(r, c, color, directions) {
+      const moves = [];
+      for (const [dr, dc] of directions) {
+          for (let i = 1; i < 8; i++) {
+              const newR = r + i * dr;
+              const newC = c + i * dc;
+              if (!isValid(newR, newC)) break;
+              const targetPiece = board[newR][newC];
+              if (targetPiece) {
+                  if (getPieceColor(targetPiece) !== color) moves.push([newR, newC]);
+                  break;
+              }
+              moves.push([newR, newC]);
+          }
+      }
+      return moves;
+  }
+
+  function getKnightMoves(r, c, color) {
+      const moves = [];
+      const offsets = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
+      for (const [dr, dc] of offsets) {
+          const newR = r + dr;
+          const newC = c + dc;
+          if (isValid(newR, newC) && (!board[newR][newC] || getPieceColor(board[newR][newC]) !== color)) {
+              moves.push([newR, newC]);
+          }
+      }
+      return moves;
+  }
+
+  function getKingMoves(r, c, color) {
+      const moves = [];
+      for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+              if (dr === 0 && dc === 0) continue;
+              const newR = r + dr;
+              const newC = c + dc;
+              if (isValid(newR, newC) && (!board[newR][newC] || getPieceColor(board[newR][newC]) !== color)) {
+                  moves.push([newR, newC]);
+              }
+          }
+      }
+      // Castling logic is complex and not included here for simplicity
+      return moves;
+  }
+
+  function isKingInCheck(kingColor) {
+    return isKingInCheckOnBoard(board, kingColor);
+  }
+
+  function isKingInCheckOnBoard(targetBoard, kingColor) {
+      const kingPos = findKingOnBoard(targetBoard, kingColor);
+      if (!kingPos) return false;
+      const opponentColor = kingColor === 'white' ? 'black' : 'white';
+
+      // Check for threats from all opponent pieces
+      for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+              const piece = targetBoard[r][c];
+              if (piece && getPieceColor(piece) === opponentColor) {
+                  const rawMoves = getRawMovesOnBoard(targetBoard, piece, r, c);
+                  if (rawMoves.some(move => move[0] === kingPos.row && move[1] === kingPos.col)) {
+                      return true;
+                  }
+              }
+          }
+      }
+      return false;
+  }
+
+  // Helper functions for board state simulation
+  function getRawMovesOnBoard(targetBoard, piece, row, col) {
+      const color = getPieceColor(piece);
+      switch (piece.toLowerCase()) {
+          case 'p': return getPawnMovesOnBoard(targetBoard, row, col, color);
+          case 'r': return getSlidingMovesOnBoard(targetBoard, row, col, color, [[-1, 0], [1, 0], [0, -1], [0, 1]]);
+          case 'n': return getKnightMovesOnBoard(targetBoard, row, col, color);
+          case 'b': return getSlidingMovesOnBoard(targetBoard, row, col, color, [[-1, -1], [-1, 1], [1, -1], [1, 1]]);
+          case 'q': return getSlidingMovesOnBoard(targetBoard, row, col, color, [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]]);
+          case 'k': return getKingMovesOnBoard(targetBoard, row, col, color);
+          default: return [];
+      }
+  }
+
+  function getPawnMovesOnBoard(targetBoard, r, c, color) {
+    const moves = [];
+    const dir = color === 'white' ? -1 : 1;
+    // Captures
+    [-1, 1].forEach(offset => {
+        if (isValid(r + dir, c + offset)) {
+            const target = targetBoard[r + dir][c + offset];
+            if (target && getPieceColor(target) !== color) {
+                moves.push([r + dir, c + offset]);
+            }
+        }
+    });
+    return moves;
+  }
+
+  function getSlidingMovesOnBoard(targetBoard, r, c, color, directions) {
+      const moves = [];
+      for (const [dr, dc] of directions) {
+          for (let i = 1; i < 8; i++) {
+              const newR = r + i * dr;
+              const newC = c + i * dc;
+              if (!isValid(newR, newC)) break;
+              const targetPiece = targetBoard[newR][newC];
+              if (targetPiece) {
+                  if (getPieceColor(targetPiece) !== color) moves.push([newR, newC]);
+                  break;
+              }
+              moves.push([newR, newC]);
+          }
+      }
+      return moves;
+  }
+
+  function getKnightMovesOnBoard(targetBoard, r, c, color) {
+      const moves = [];
+      const offsets = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
+      for (const [dr, dc] of offsets) {
+          const newR = r + dr;
+          const newC = c + dc;
+          if (isValid(newR, newC) && (!targetBoard[newR][newC] || getPieceColor(targetBoard[newR][newC]) !== color)) {
+              moves.push([newR, newC]);
+          }
+      }
+      return moves;
+  }
+
+  function getKingMovesOnBoard(targetBoard, r, c, color) {
+      const moves = [];
+      for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+              if (dr === 0 && dc === 0) continue;
+              const newR = r + dr;
+              const newC = c + dc;
+              if (isValid(newR, newC) && (!targetBoard[newR][newC] || getPieceColor(targetBoard[newR][newC]) !== color)) {
+                  moves.push([newR, newC]);
+              }
+          }
+      }
+      return moves;
+  }
+
+  function getAllValidMoves(color) {
+      const allMoves = [];
+      for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+              const piece = board[r][c];
+              if (piece && getPieceColor(piece) === color) {
+                  const moves = getValidMoves(piece, r, c);
+                  if (moves.length > 0) allMoves.push(...moves);
+              }
+          }
+      }
+      return allMoves;
+  }
+
+  function findKingOnBoard(targetBoard, color) {
+      const kingChar = color === 'white' ? 'K' : 'k';
+      for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+              if (targetBoard[r][c] === kingChar) return { row: r, col: c };
+          }
+      }
+      return null;
+  }
+
+  function isValid(r, c) { return r >= 0 && r < 8 && c >= 0 && c < 8; }
+  function getPieceColor(piece) { return piece === piece.toUpperCase() ? 'white' : 'black'; }
+
+  // --- UI HIGHLIGHTING ---
+  function clearHighlights() {
+      document.querySelectorAll('.selected, .valid-move').forEach(el => {
+          el.classList.remove('selected', 'valid-move');
+      });
+  }
+
+  function highlightSelected(row, col) {
+      const square = document.querySelector(`[data-row='${row}'][data-col='${col}']`);
+      if (square) square.classList.add('selected');
+  }
+
+  function highlightValidMoves(moves) {
+      moves.forEach(([r, c]) => {
+          const square = document.querySelector(`[data-row='${r}'][data-col='${c}']`);
+          if (square) square.classList.add('valid-move');
+      });
+  }
+
+  // --- EVENT LISTENERS ---
+  resetButton.addEventListener('click', initializeBoard);
+
+  // --- INITIALIZE GAME ---
+  initializeBoard();
+</script>
+</body>
+</html>
