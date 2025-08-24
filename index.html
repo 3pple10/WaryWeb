@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WaryWEB - Modern Game Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0a0a0a;
+      background-image: radial-gradient(circle at top right, rgba(121, 68, 255, 0.15), transparent 40%),
+                        radial-gradient(circle at bottom left, rgba(0, 122, 255, 0.15), transparent 50%);
+    }
+
+    .card-glass {
+      background: rgba(23, 23, 23, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Game Card Style */
+    .game-card {
+      transition: all 0.35s ease;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: #fff;
+      color: #000;
+    }
+    .game-card:hover {
+      transform: scale(1.03);
+      border-color: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
+      background: #e5e5e5; /* ash/gray on hover */
+      color: #000;
+    }
+
+    /* New: Cool transparent buttons with floating effect and sliding background */
+    .cool-btn {
+      position: relative; /* Needed for the pseudo-element to work */
+      overflow: hidden; /* Hides the part of the pseudo-element that's off-screen */
+      transition: all 0.4s ease;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05); /* slightly transparent white */
+      color: #fff;
+    }
+
+    /* Pseudo-element for the sliding background effect */
+    .cool-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.1); /* The transparent color that slides in */
+      transform: translateX(-100%); /* Start off-screen to the left */
+      transition: transform 0.4s ease; /* Animate the slide */
+      z-index: 1;
+    }
+
+    /* Apply hover effects to the button */
+    .cool-btn:hover {
+      transform: translateY(-8px) scale(1.02); /* floating effect */
+      box-shadow: 0 10px 20px rgba(255, 255, 255, 0.15); /* New subtle white glow */
+      border-color: rgba(255, 255, 255, 0.3); /* border color change */
+    }
+
+    /* On hover, slide the pseudo-element in */
+    .cool-btn:hover::before {
+      transform: translateX(0);
+    }
+
+    /* Keep the icon and text above the sliding effect */
+    .cool-btn .content {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* New: Icons in cool buttons */
+    .cool-btn .lucide {
+      transition: all 0.4s ease;
+    }
+    .cool-btn:hover .lucide {
+      transform: scale(1.1); /* icon grows on hover */
+      color: #fff; /* White color on hover */
+    }
+
+    .nav-link {
+      position: relative;
+    }
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      width: 0%;
+      height: 2px;
+      left: 0;
+      bottom: -3px;
+      background: #fff;
+      transition: 0.3s;
+    }
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    /* Hero Button */
+    .hero-btn {
+      transition: all 0.3s ease;
+    }
+    .hero-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Fade-in animation */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 1s ease, transform 1s ease;
+    }
+    .fade-in.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="text-white">
+
+<header class="fixed top-0 left-0 w-full bg-black/50 backdrop-blur-md border-b border-gray-800 z-50">
+  <div class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+    <h1 class="text-2xl font-black">WaryWEB</h1>
+    <nav class="flex gap-8 text-gray-300">
+      <a href="#games" class="nav-link hover:text-white">Games</a>
+      <a href="#utilities" class="nav-link hover:text-white">Utilities</a>
+      <a href="#about" class="nav-link hover:text-white">About</a>
+    </nav>
+    <div class="card-glass flex items-center gap-4 px-4 py-2 rounded-lg">
+      <div id="clock" class="text-lg font-bold">10:59</div>
+      <div class="border-l border-gray-600 h-6"></div>
+      <div id="date" class="text-sm text-gray-300">Dec, 2025</div>
+    </div>
+  </div>
+</header>
+
+<section class="h-screen flex flex-col items-center justify-center text-center px-6">
+  <h2 class="text-5xl md:text-6xl font-extrabold mb-6">Welcome to <span class="text-purple-400">WaryWEB</span></h2>
+  <p class="text-gray-400 max-w-xl mb-10">Your modern hub for classic games and free tools. Dive into strategy, fun, and utilities—all in one place.</p>
+  <a href="#games" class="hero-btn px-8 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-semibold shadow-lg">Explore Now</a>
+</section>
+
+<section id="games" class="py-20 px-6">
+  <div class="max-w-6xl mx-auto text-center mb-12">
+    <h3 class="text-3xl font-bold">Choose a Game</h3>
+    <p class="text-gray-400 mt-2">Classic and casual fun awaits you.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 fade-in">
+    <a href="chess.html" class="cool-btn p-10 rounded-2xl flex flex-col items-center text-center">
+      <div class="content">
+        <i data-lucide="crown" class="w-16 h-16 mb-4 text-white"></i>
+        <h4 class="text-2xl font-bold">Chess</h4>
+        <p class="mt-2 text-gray-400">The timeless battle of strategy.</p>
+      </div>
+    </a>
+
+    <a href="othergames.html" class="cool-btn p-10 rounded-2xl flex flex-col items-center text-center">
+      <div class="content">
+        <i data-lucide="gamepad-2" class="w-16 h-16 mb-4 text-white"></i>
+        <h4 class="text-2xl font-bold">Other Games</h4>
+        <p class="mt-2 text-gray-400">Discover more fun inside.</p>
+      </div>
+    </a>
+  </div>
+</section>
+
+<section id="utilities" class="py-20 px-6 bg-gradient-to-b from-black/30 to-black/70">
+  <div class="max-w-6xl mx-auto text-center mb-12">
+    <h3 class="text-3xl font-bold">Free Utilities</h3>
+    <p class="text-gray-400 mt-2">Helpful tools built just for you.</p>
+  </div>
+
+  <a href="utility.html" class="cool-btn max-w-4xl mx-auto p-12 rounded-2xl flex flex-col sm:flex-row items-center gap-6 fade-in">
+    <div class="content">
+      <i data-lucide="wrench" class="w-20 h-20 text-white"></i>
+      <div>
+        <h4 class="text-2xl font-bold">Handy Tools</h4>
+        <p class="mt-2 text-gray-400">From quick converters to productivity enhancers—our utilities save you time.</p>
+      </div>
+    </div>
+  </a>
+</section>
+
+<section id="about" class="py-20 px-6">
+  <div class="max-w-5xl mx-auto text-center fade-in">
+    <h3 class="text-3xl font-bold">About WaryWEB</h3>
+    <p class="text-gray-400 mt-4">Powered by <span class="text-purple-400 font-semibold">Smanwary</span>, WaryWEB is designed to bring entertainment and utilities into a single, elegant platform. Whether you’re strategizing in chess, enjoying casual games, or using free utilities, we’ve got you covered.</p>
+  </div>
+</section>
+
+<footer class="py-8 border-t border-gray-800 text-center text-gray-400">
+  <p>&copy; 2025 WaryWEB. All Rights Reserved.</p>
+</footer>
+
+<script>
+  // Icons
+  lucide.createIcons();
+
+  // Clock + Date
+  function updateTime() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('clock').textContent = `${hours}:${minutes}`;
+    const month = now.toLocaleString('default', { month: 'short' });
+    document.getElementById('date').textContent = `${month}, ${now.getFullYear()}`;
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+
+  // Fade-in scroll animation
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add("show");
+    });
+  }, { threshold: 0.2 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
