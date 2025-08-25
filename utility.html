@@ -94,88 +94,140 @@
           background-color: #555 !important;
           border-color: #888 !important;
         }
+
+        /* Mobile menu styles */
+        .mobile-menu {
+          transform: translateX(100%);
+          transition: transform 0.3s ease-in-out;
+        }
+        .mobile-menu.active {
+          transform: translateX(0);
+        }
+
+        /* Prevent horizontal scrolling */
+        html, body {
+          overflow-x: hidden;
+        }
     </style>
 </head>
 <body class="text-white">
 
-<header class="fixed top-0 left-0 w-full bg-black/50 backdrop-blur-md border-b border-gray-800 z-50">
-    <div class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-        <a href="index.html" class="text-2xl font-black">WaryWEB</a>
-        <nav class="flex gap-8 text-gray-300">
+<header class="fixed top-0 left-0 w-full bg-black/80 backdrop-blur-md border-b border-gray-800 z-50">
+    <div class="max-w-6xl mx-auto flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+        <a href="index.html" class="text-xl sm:text-2xl font-black">WaryWEB</a>
+
+        <nav class="hidden md:flex gap-6 lg:gap-8 text-gray-300">
             <a href="index.html#games" class="nav-link hover:text-white">Games</a>
             <a href="utilities.html" class="nav-link hover:text-white text-white">Utilities</a>
             <a href="index.html#about" class="nav-link hover:text-white">About</a>
         </nav>
-        <div class="card-glass flex items-center gap-4 px-4 py-2 rounded-lg">
+
+        <button id="mobile-menu-button" class="md:hidden p-2">
+            <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+
+        <div class="hidden sm:flex card-glass items-center gap-4 px-4 py-2 rounded-lg">
             <div id="clock" class="text-lg font-bold">10:59</div>
             <div class="border-l border-gray-600 h-6"></div>
             <div id="date" class="text-sm text-gray-300">Dec, 2025</div>
         </div>
     </div>
+
+    <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-black/95 backdrop-blur-lg z-50 p-6 md:hidden">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-xl font-bold">Menu</h2>
+            <button id="close-menu" class="p-2">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <nav class="flex flex-col gap-6 text-lg">
+            <a href="index.html#games" class="nav-link hover:text-white py-2">Games</a>
+            <a href="utilities.html" class="nav-link hover:text-white py-2 text-white">Utilities</a>
+            <a href="index.html#about" class="nav-link hover:text-white py-2">About</a>
+        </nav>
+        <div class="mt-10 pt-6 border-t border-gray-700">
+            <div class="flex items-center gap-3">
+                <i data-lucide="clock" class="w-5 h-5"></i>
+                <div id="mobile-clock" class="font-medium">10:59</div>
+            </div>
+            <div class="flex items-center gap-3 mt-2">
+                <i data-lucide="calendar" class="w-5 h-5"></i>
+                <div id="mobile-date" class="text-gray-300">Dec, 2025</div>
+            </div>
+        </div>
+    </div>
 </header>
 
-<section id="utilities" class="py-24 px-6 min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-black/30 to-black/70">
-    <div class="max-w-6xl w-full mx-auto text-center mb-12">
-        <h3 class="text-4xl font-bold">Free Utilities</h3>
-        <p class="text-gray-400 mt-2">Helpful tools to get things done, all in one place.</p>
+<div class="sm:hidden fixed top-16 right-4 z-40">
+    <div class="card-glass px-3 py-1 rounded-lg text-sm flex items-center gap-2">
+        <span id="mobile-time-small" class="font-medium">10:59</span>
+        <span class="text-gray-300">•</span>
+        <span id="mobile-date-small">Dec, 2025</span>
+    </div>
+</div>
+
+<section id="utilities" class="py-20 px-4 min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-black/30 to-black/70">
+    <div class="max-w-6xl w-full mx-auto text-center mb-8 sm:mb-12">
+        <h3 class="text-3xl sm:text-4xl font-bold">Free Utilities</h3>
+        <p class="text-gray-400 mt-2 text-sm sm:text-base">Helpful tools to get things done, all in one place.</p>
     </div>
 
-    <div class="max-w-5xl w-full mx-auto p-6 md:p-12 card-glass rounded-2xl fade-in">
-        <div class="flex flex-wrap justify-center gap-4 mb-8">
-            <button onclick="showUtility('calculator')" class="utility-button px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700 active">Calculator</button>
-            <button onclick="showUtility('timer')" class="utility-button px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700">Timer</button>
-            <button onclick="showUtility('stopwatch')" class="utility-button px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700">Stopwatch</button>
-            <button onclick="showUtility('qr-generator')" class="utility-button px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700">QR Code</button>
-            <button onclick="showUtility('url-shortener')" class="utility-button px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700">URL Shortener</button>
+    <div class="max-w-5xl w-full mx-auto p-4 sm:p-6 md:p-12 card-glass rounded-2xl fade-in" style="min-height: 550px;">
+        <div class="flex flex-wrap justify-center gap-2 sm:gap-4 mb-6 sm:mb-8">
+            <button onclick="showUtility('calculator')" class="utility-button px-4 py-2 sm:px-6 sm:py-3 rounded-xl border border-gray-700 bg-gray-800 text-xs sm:text-sm font-semibold hover:bg-gray-700 active">Calculator</button>
+            <button onclick="showUtility('timer')" class="utility-button px-4 py-2 sm:px-6 sm:py-3 rounded-xl border border-gray-700 bg-gray-800 text-xs sm:text-sm font-semibold hover:bg-gray-700">Timer</button>
+            <button onclick="showUtility('stopwatch')" class="utility-button px-4 py-2 sm:px-6 sm:py-3 rounded-xl border border-gray-700 bg-gray-800 text-xs sm:text-sm font-semibold hover:bg-gray-700">Stopwatch</button>
+            <button onclick="showUtility('qr-generator')" class="utility-button px-4 py-2 sm:px-6 sm:py-3 rounded-xl border border-gray-700 bg-gray-800 text-xs sm:text-sm font-semibold hover:bg-gray-700">QR Code</button>
+            <button onclick="showUtility('url-shortener')" class="utility-button px-4 py-2 sm:px-6 sm:py-3 rounded-xl border border-gray-700 bg-gray-800 text-xs sm:text-sm font-semibold hover:bg-gray-700">URL Shortener</button>
         </div>
 
         <div id="utility-container">
 
             <div id="calculator" class="utility-content">
-                <div class="text-center mb-6">
-                    <h4 class="text-2xl font-bold mb-1">Calculator</h4>
-                    <p class="text-gray-400 text-sm">A simple and advanced calculator.</p>
+                <div class="text-center mb-4 sm:mb-6">
+                    <h4 class="text-xl sm:text-2xl font-bold mb-1">Calculator</h4>
+                    <p class="text-gray-400 text-xs sm:text-sm">A simple and advanced calculator.</p>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-gray-900 rounded-xl p-6 shadow-lg">
-                        <div id="calc-display" class="bg-gray-800 text-white text-3xl font-mono text-right p-4 mb-4 rounded-lg overflow-x-auto whitespace-nowrap">0</div>
-                        <div class="grid grid-cols-5 gap-2">
-                            <button onclick="clearDisplay()" class="col-span-1 bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-xl font-bold text-lg">C</button>
-                            <button onclick="backspace()" class="col-span-1 bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-xl font-bold text-lg">←</button>
-                            <button onclick="appendToDisplay('**')" class="bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-xl font-bold text-lg">^</button>
-                            <button onclick="calculateAdvanced('Math.sqrt(')" class="bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-xl font-bold text-lg">√</button>
-                            <button onclick="appendToDisplay('/')" class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-xl font-bold text-lg">/</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+                    <div class="bg-gray-900 rounded-xl p-4 sm:p-6 shadow-lg">
+                        <div id="calc-display" class="bg-gray-800 text-white text-xl sm:text-2xl md:text-3xl font-mono text-right p-3 sm:p-4 mb-3 sm:mb-4 rounded-lg overflow-x-auto whitespace-nowrap">0</div>
+                        <div class="grid grid-cols-5 gap-1 sm:gap-2">
+                            <button onclick="clearDisplay()" class="col-span-1 bg-gray-700 hover:bg-gray-600 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">C</button>
+                            <button onclick="backspace()" class="col-span-1 bg-gray-700 hover:bg-gray-600 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">←</button>
+                            <button onclick="appendToDisplay('**')" class="bg-gray-700 hover:bg-gray-600 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">^</button>
+                            <button onclick="calculateAdvanced('Math.sqrt(')" class="bg-gray-700 hover:bg-gray-600 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">√</button>
+                            <button onclick="appendToDisplay('/')" class="bg-purple-600 hover:bg-purple-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">/</button>
 
-                            <button onclick="calculateAdvanced('Math.sin(')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">sin</button>
-                            <button onclick="calculateAdvanced('Math.cos(')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">cos</button>
-                            <button onclick="calculateAdvanced('Math.tan(')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">tan</button>
-                            <button onclick="appendToDisplay('(')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">(</button>
-                            <button onclick="appendToDisplay('*')" class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-xl font-bold text-lg">*</button>
+                            <button onclick="calculateAdvanced('Math.sin(')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-xs sm:text-lg">sin</button>
+                            <button onclick="calculateAdvanced('Math.cos(')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-xs sm:text-lg">cos</button>
+                            <button onclick="calculateAdvanced('Math.tan(')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-xs sm:text-lg">tan</button>
+                            <button onclick="appendToDisplay('(')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">(</button>
+                            <button onclick="appendToDisplay('*')" class="bg-purple-600 hover:bg-purple-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">*</button>
 
-                            <button onclick="appendToDisplay('7')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">7</button>
-                            <button onclick="appendToDisplay('8')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">8</button>
-                            <button onclick="appendToDisplay('9')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">9</button>
-                            <button onclick="appendToDisplay(')')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">)</button>
-                            <button onclick="appendToDisplay('-')" class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-xl font-bold text-lg">-</button>
+                            <button onclick="appendToDisplay('7')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">7</button>
+                            <button onclick="appendToDisplay('8')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">8</button>
+                            <button onclick="appendToDisplay('9')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">9</button>
+                            <button onclick="appendToDisplay(')')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">)</button>
+                            <button onclick="appendToDisplay('-')" class="bg-purple-600 hover:bg-purple-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">-</button>
 
-                            <button onclick="appendToDisplay('4')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">4</button>
-                            <button onclick="appendToDisplay('5')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">5</button>
-                            <button onclick="appendToDisplay('6')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">6</button>
-                            <button onclick="calculateAdvanced('**2')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">x²</button>
-                            <button onclick="appendToDisplay('+')" class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-xl font-bold text-lg">+</button>
+                            <button onclick="appendToDisplay('4')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">4</button>
+                            <button onclick="appendToDisplay('5')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">5</button>
+                            <button onclick="appendToDisplay('6')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">6</button>
+                            <button onclick="calculateAdvanced('**2')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-xs sm:text-lg">x²</button>
+                            <button onclick="appendToDisplay('+')" class="bg-purple-600 hover:bg-purple-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">+</button>
 
-                            <button onclick="appendToDisplay('1')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">1</button>
-                            <button onclick="appendToDisplay('2')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">2</button>
-                            <button onclick="appendToDisplay('3')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">3</button>
-                            <button onclick="appendToDisplay('.')" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">.</button>
-                            <button onclick="calculateResult()" class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-xl font-bold text-lg">=</button>
+                            <button onclick="appendToDisplay('1')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">1</button>
+                            <button onclick="appendToDisplay('2')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">2</button>
+                            <button onclick="appendToDisplay('3')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">3</button>
+                            <button onclick="appendToDisplay('.')" class="bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">.</button>
+                            <button onclick="calculateResult()" class="bg-purple-600 hover:bg-purple-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">=</button>
 
-                            <button onclick="appendToDisplay('0')" class="col-span-2 bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-xl font-bold text-lg">0</button>
+                            <button onclick="appendToDisplay('0')" class="col-span-2 bg-gray-800 hover:bg-gray-700 text-white p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg">0</button>
                         </div>
                     </div>
-                    <div class="bg-gray-900 rounded-xl p-6 shadow-lg flex flex-col">
-                        <h5 class="text-xl font-semibold mb-4 text-center">History</h5>
-                        <div id="calc-history" class="text-gray-400 text-sm overflow-y-auto max-h-64 space-y-2">
+                    <div class="bg-gray-900 rounded-xl p-4 sm:p-6 shadow-lg flex flex-col">
+                        <h5 class="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-center">History</h5>
+                        <div id="calc-history" class="text-gray-400 text-xs sm:text-sm overflow-y-auto max-h-48 sm:max-h-64 space-y-1 sm:space-y-2">
                             <p class="text-center">No history yet.</p>
                         </div>
                     </div>
@@ -183,67 +235,67 @@
             </div>
 
             <div id="timer" class="utility-content hidden">
-                <div class="text-center mb-6">
-                    <h4 class="text-2xl font-bold mb-1">Timer</h4>
-                    <p class="text-gray-400 text-sm">Set a countdown for any task.</p>
+                <div class="text-center mb-4 sm:mb-6">
+                    <h4 class="text-xl sm:text-2xl font-bold mb-1">Timer</h4>
+                    <p class="text-gray-400 text-xs sm:text-sm">Set a countdown for any task.</p>
                 </div>
                 <div class="flex flex-col items-center">
-                    <div class="text-7xl md:text-8xl font-mono mb-8 text-white" id="timer-display">00:00</div>
-                    <div class="flex gap-4 mb-6">
-                        <input type="number" id="timer-minutes" placeholder="Min" class="w-24 px-4 py-2 rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-purple-600" min="0" value="5">
-                        <input type="number" id="timer-seconds" placeholder="Sec" class="w-24 px-4 py-2 rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-purple-600" min="0" max="59" value="0">
+                    <div class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-mono mb-6 sm:mb-8 text-white" id="timer-display">00:00</div>
+                    <div class="flex gap-2 sm:gap-4 mb-4 sm:mb-6">
+                        <input type="number" id="timer-minutes" placeholder="Min" class="w-20 sm:w-24 px-3 py-2 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-purple-600" min="0" value="5">
+                        <input type="number" id="timer-seconds" placeholder="Sec" class="w-20 sm:w-24 px-3 py-2 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-purple-600" min="0" max="59" value="0">
                     </div>
-                    <div class="flex gap-4">
-                        <button onclick="startTimer()" id="timer-start-btn" class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold">Start</button>
-                        <button onclick="pauseTimer()" id="timer-pause-btn" class="px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-semibold hidden">Pause</button>
-                        <button onclick="resetTimer()" class="px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-semibold">Reset</button>
+                    <div class="flex gap-2 sm:gap-4 flex-wrap justify-center">
+                        <button onclick="startTimer()" id="timer-start-btn" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-sm sm:text-base font-semibold">Start</button>
+                        <button onclick="pauseTimer()" id="timer-pause-btn" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm sm:text-base font-semibold hidden">Pause</button>
+                        <button onclick="resetTimer()" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm sm:text-base font-semibold">Reset</button>
                     </div>
                 </div>
             </div>
 
             <div id="stopwatch" class="utility-content hidden">
-                <div class="text-center mb-6">
-                    <h4 class="text-2xl font-bold mb-1">Stopwatch</h4>
-                    <p class="text-gray-400 text-sm">Measure time with a glowing nano-second display.</p>
+                <div class="text-center mb-4 sm:mb-6">
+                    <h4 class="text-xl sm:text-2xl font-bold mb-1">Stopwatch</h4>
+                    <p class="text-gray-400 text-xs sm:text-sm">Measure time with a glowing nano-second display.</p>
                 </div>
                 <div class="flex flex-col items-center">
-                    <div class="text-7xl md:text-8xl font-mono mb-8 text-cyan-400 stopwatch-glow" id="stopwatch-display">00:00:00.000</div>
-                    <div class="flex gap-4">
-                        <button onclick="startStopwatch()" id="stopwatch-start-btn" class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold">Start</button>
-                        <button onclick="pauseStopwatch()" id="stopwatch-pause-btn" class="px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-semibold hidden">Pause</button>
-                        <button onclick="resetStopwatch()" class="px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-semibold">Reset</button>
+                    <div class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-mono mb-6 sm:mb-8 text-cyan-400 stopwatch-glow" id="stopwatch-display">00:00:00.000</div>
+                    <div class="flex gap-2 sm:gap-4 flex-wrap justify-center">
+                        <button onclick="startStopwatch()" id="stopwatch-start-btn" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-sm sm:text-base font-semibold">Start</button>
+                        <button onclick="pauseStopwatch()" id="stopwatch-pause-btn" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm sm:text-base font-semibold hidden">Pause</button>
+                        <button onclick="resetStopwatch()" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm sm:text-base font-semibold">Reset</button>
                     </div>
                 </div>
             </div>
 
             <div id="qr-generator" class="utility-content hidden">
-                <div class="text-center mb-6">
-                    <h4 class="text-2xl font-bold mb-1">QR Code Generator</h4>
-                    <p class="text-gray-400 text-sm">Create a QR code from any text or link.</p>
+                <div class="text-center mb-4 sm:mb-6">
+                    <h4 class="text-xl sm:text-2xl font-bold mb-1">QR Code Generator</h4>
+                    <p class="text-gray-400 text-xs sm:text-sm">Create a QR code from any text or link.</p>
                 </div>
                 <div class="flex flex-col items-center">
-                    <input type="text" id="qr-input" placeholder="Enter text or URL" class="w-full max-w-lg px-4 py-2 rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-purple-600 mb-6">
-                    <button onclick="generateQRCode()" class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold mb-4">Generate QR Code</button>
+                    <input type="text" id="qr-input" placeholder="Enter text or URL" class="w-full max-w-lg px-4 py-2 rounded-lg sm:rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-purple-600 mb-4 sm:mb-6">
+                    <button onclick="generateQRCode()" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-sm sm:text-base font-semibold mb-4">Generate QR Code</button>
                     <div id="qr-output" class="p-4 rounded-xl bg-white flex items-center justify-center">
                     </div>
                 </div>
             </div>
 
             <div id="url-shortener" class="utility-content hidden">
-                <div class="text-center mb-6">
-                    <h4 class="text-2xl font-bold mb-1">URL Shortener</h4>
-                    <p class="text-gray-400 text-sm">A simple, local URL shortener.</p>
+                <div class="text-center mb-4 sm:mb-6">
+                    <h4 class="text-xl sm:text-2xl font-bold mb-1">URL Shortener</h4>
+                    <p class="text-gray-400 text-xs sm:text-sm">A simple, local URL shortener.</p>
                 </div>
                 <div class="flex flex-col items-center">
-                    <input type="url" id="long-url-input" placeholder="Paste a long URL here" class="w-full max-w-lg px-4 py-2 rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-purple-600 mb-4">
-                    <button onclick="shortenUrl()" class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold mb-4">Shorten URL</button>
+                    <input type="url" id="long-url-input" placeholder="Paste a long URL here" class="w-full max-w-lg px-4 py-2 rounded-lg sm:rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-purple-600 mb-4">
+                    <button onclick="shortenUrl()" class="px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-sm sm:text-base font-semibold mb-4">Shorten URL</button>
                     <div id="short-url-output" class="text-center w-full max-w-lg hidden">
-                        <p class="text-gray-400">Your shortened URL:</p>
-                        <div class="flex items-center justify-center gap-2 mt-2">
-                            <input type="text" readonly id="short-url-display" class="w-full px-4 py-2 rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none cursor-pointer">
-                            <button onclick="copyToClipboard()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-xl text-white font-semibold">Copy</button>
+                        <p class="text-gray-400 text-sm">Your shortened URL:</p>
+                        <div class="flex flex-col sm:flex-row items-center justify-center gap-2 mt-2">
+                            <input type="text" readonly id="short-url-display" class="w-full px-4 py-2 rounded-lg sm:rounded-xl text-center bg-gray-800 text-white border border-gray-700 focus:outline-none cursor-pointer text-sm">
+                            <button onclick="copyToClipboard()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg sm:rounded-xl text-white text-sm font-semibold mt-2 sm:mt-0">Copy</button>
                         </div>
-                        <p class="text-red-400 text-sm mt-2" id="copy-message"></p>
+                        <p class="text-red-400 text-xs mt-2" id="copy-message"></p>
                     </div>
                 </div>
             </div>
@@ -252,7 +304,7 @@
     </div>
 </section>
 
-<footer class="py-8 border-t border-gray-800 text-center text-gray-400">
+<footer class="py-6 sm:py-8 border-t border-gray-800 text-center text-gray-400 text-sm sm:text-base">
     <p>&copy; 2025 WaryWEB. All Rights Reserved.</p>
 </footer>
 
@@ -279,9 +331,18 @@
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
+
+      // Update all clock elements
       document.getElementById('clock').textContent = `${hours}:${minutes}`;
+      document.getElementById('mobile-clock').textContent = `${hours}:${minutes}`;
+      document.getElementById('mobile-time-small').textContent = `${hours}:${minutes}`;
+
+      // Update date elements
       const month = now.toLocaleString('default', { month: 'short' });
-      document.getElementById('date').textContent = `${month}, ${now.getFullYear()}`;
+      const dateText = `${month}, ${now.getFullYear()}`;
+      document.getElementById('date').textContent = dateText;
+      document.getElementById('mobile-date').textContent = dateText;
+      document.getElementById('mobile-date-small').textContent = dateText;
     }
     setInterval(updateTime, 1000);
     updateTime();
@@ -320,14 +381,14 @@
       }
       historyDiv.innerHTML = history.map(item => `
         <div class="p-2 border-b border-gray-700 last:border-b-0">
-          <p class="text-sm text-gray-300">${item.expression}</p>
-          <p class="text-lg text-white font-bold">${item.result}</p>
+          <p class="text-xs sm:text-sm text-gray-300">${item.expression}</p>
+          <p class="text-sm sm:text-lg text-white font-bold">${item.result}</p>
         </div>
       `).join('');
     }
 
     function appendToDisplay(value) {
-      if (display === '0') {
+      if (display === '0' && value !== '.') {
         display = value;
       } else {
         display += value;
@@ -336,11 +397,21 @@
     }
 
     function calculateAdvanced(func) {
-      // Special handling for function calls
-      // If the display has a value, wrap it inside the function call
-      if (display !== '0' && display !== '') {
-          display = `${func}${display})`;
-      } else {
+      if (func === 'Math.sqrt(' || func === 'Math.sin(' || func === 'Math.cos(' || func === 'Math.tan(') {
+          if (display === '0' || display === '') {
+              display = func;
+          } else {
+              const lastChar = display.slice(-1);
+              if (/[0-9)]/.test(lastChar)) {
+                  display = `${func}${display})`;
+              } else {
+                  display += func;
+              }
+          }
+      } else if (func === '**2') {
+          if (display === '0' || display === '') {
+              return; // Don't allow squaring an empty display
+          }
           display += func;
       }
       updateDisplay();
@@ -360,26 +431,22 @@
     }
 
     function calculateResult() {
+      const expression = display.replace(/\^/g, '**');
       let result;
-      const expression = display;
       try {
-        // Replace custom operators with valid JS ones
-        let cleanedExpression = expression.replace(/√/g, 'Math.sqrt(').replace(/\^/g, '**');
+        // A safer alternative to eval() for basic math
+        result = new Function('return ' + expression)();
 
-        // Attempt to evaluate the expression
-        result = eval(cleanedExpression);
-
-        // Handle special cases and floating point issues
         if (typeof result === 'number' && !isFinite(result)) {
           result = 'Error';
         } else {
-          result = result.toFixed(10).replace(/\.?0+$/, ''); // Clean up trailing zeros
+          result = parseFloat(result.toFixed(10)); // Clean up floating point
         }
       } catch (e) {
         result = 'Error';
       }
 
-      addToHistory(expression, result);
+      addToHistory(display, result);
       display = result.toString();
       updateDisplay();
     }
@@ -558,6 +625,23 @@
         window.location.href = urlMap[shortKey];
       }
     }
+
+    // Mobile menu functionality
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const closeMenuButton = document.getElementById('close-menu');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    function toggleMobileMenu() {
+        mobileMenu.classList.toggle('active');
+    }
+
+    mobileMenuButton.addEventListener('click', toggleMobileMenu);
+    closeMenuButton.addEventListener('click', toggleMobileMenu);
+
+    // Close menu when clicking on links
+    document.querySelectorAll('#mobile-menu a').forEach(link => {
+      link.addEventListener('click', toggleMobileMenu);
+    });
 
     // Initial setup when the page loads
     document.addEventListener('DOMContentLoaded', () => {
