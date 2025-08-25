@@ -4,13 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WaryWEB - Chess</title>
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
@@ -107,41 +104,35 @@
     }
   </style>
 </head>
-<body class="text-white flex flex-col items-center min-h-screen p-4">
+<body class="text-white flex flex-col items-center min-h-screen p-4 sm:p-6 lg:p-8">
 
-<div class="w-full max-w-7xl mx-auto">
-  <!-- Header Section -->
-  <header class="flex flex-col sm:flex-row justify-between items-center mb-8 px-4">
+<div class="w-full max-w-7xl mx-auto flex flex-col items-center">
+  <header class="w-full flex flex-col sm:flex-row justify-between items-center mb-8 px-4">
     <div class="text-center sm:text-left mb-4 sm:mb-0">
       <a href="index.html" class="hover:opacity-80 transition-opacity">
-        <h1 class="text-4xl font-black tracking-wider">WaryWEB</h1>
-        <p class="text-sm text-gray-400">Now Playing: Chess</p>
+        <h1 class="text-3xl sm:text-4xl font-black tracking-widest">WaryWEB</h1>
+        <p class="text-sm sm:text-base text-gray-400">Now Playing: Chess</p>
       </a>
     </div>
     <div class="flex items-center gap-4">
-      <!-- Back to Hub Button -->
       <a href="#" class="card-glass flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors">
         <i data-lucide="home" class="w-5 h-5"></i>
-        <span>Back to Hub</span>
+        <span class="text-sm sm:text-base">Back to Hub</span>
       </a>
-      <!-- Clock and Date -->
       <div class="card-glass hidden md:flex items-center gap-4 px-4 py-2 rounded-lg">
-        <div id="clock" class="text-2xl font-bold tracking-widest">10:59</div>
-        <div class="border-l border-gray-600 h-8"></div>
-        <div id="date" class="text-md text-gray-300">Dec, 2025</div>
+        <div id="clock" class="text-lg font-bold tracking-widest">10:59</div>
+        <div class="border-l border-gray-600 h-6"></div>
+        <div id="date" class="text-sm text-gray-300">Dec, 2025</div>
       </div>
     </div>
   </header>
 
-  <!-- Main Game Area -->
-  <main class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start justify-center p-4">
-    <!-- Chessboard Container -->
-    <div class="lg:col-span-2 flex items-center justify-center">
+  <main class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start w-full max-w-7xl">
+    <div class="lg:col-span-2 flex items-center justify-center order-1 lg:order-none">
       <div id="chessboard" class="shadow-2xl"></div>
     </div>
 
-    <!-- Game Info Panel -->
-    <div class="card-glass p-6 rounded-lg w-full">
+    <div class="card-glass p-6 rounded-lg w-full order-2 lg:order-none">
       <h2 class="text-2xl font-bold border-b border-white/20 pb-2 mb-4">Game Status</h2>
 
       <div id="turn-indicator" class="text-xl mb-4 p-3 bg-black/20 rounded-md text-center">
@@ -149,8 +140,7 @@
       </div>
 
       <div id="status-message" class="text-lg font-semibold min-h-[28px] mb-4 text-center">
-        &nbsp; <!-- Placeholder for check/checkmate messages -->
-      </div>
+        &nbsp; </div>
 
       <div class="mb-4">
         <h3 class="font-bold mb-2">Captured by White:</h3>
