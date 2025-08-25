@@ -8,11 +8,43 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
+    /* Add the new keyframes for the animated background */
+    @keyframes moveGradient {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
     body {
       font-family: 'Inter', sans-serif;
       background-color: #0a0a0a;
+
+      /* New: Animated background gradient */
+      background-image: linear-gradient(135deg, #0a0a0a, #1a1a1a, #0a0a0a);
+      background-size: 200% 200%;
+      animation: moveGradient 15s ease infinite;
+
+      /* Existing gradients for the glow effect */
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background-image: radial-gradient(circle at top right, rgba(121, 68, 255, 0.15), transparent 40%),
                         radial-gradient(circle at bottom left, rgba(0, 122, 255, 0.15), transparent 50%);
+      z-index: -1;
+      opacity: 0.8;
     }
 
     .card-glass {
@@ -20,72 +52,6 @@
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    /* Game Card Style */
-    .game-card {
-      transition: all 0.35s ease;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: #fff;
-      color: #000;
-    }
-    .game-card:hover {
-      transform: scale(1.03);
-      border-color: rgba(255, 255, 255, 0.25);
-      box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
-      background: #e5e5e5; /* ash/gray on hover */
-      color: #000;
-    }
-
-    /* New: Cool transparent buttons with floating effect and sliding background */
-    .cool-btn {
-      position: relative; /* Needed for the pseudo-element to work */
-      overflow: hidden; /* Hides the part of the pseudo-element that's off-screen */
-      transition: all 0.4s ease;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: rgba(255, 255, 255, 0.05); /* slightly transparent white */
-      color: #fff;
-    }
-
-    /* Pseudo-element for the sliding background effect */
-    .cool-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.1); /* The transparent color that slides in */
-      transform: translateX(-100%); /* Start off-screen to the left */
-      transition: transform 0.4s ease; /* Animate the slide */
-      z-index: 1;
-    }
-
-    /* Apply hover effects to the button */
-    .cool-btn:hover {
-      transform: translateY(-8px) scale(1.02); /* floating effect */
-      box-shadow: 0 10px 20px rgba(255, 255, 255, 0.15); /* New subtle white glow */
-      border-color: rgba(255, 255, 255, 0.3); /* border color change */
-    }
-
-    /* On hover, slide the pseudo-element in */
-    .cool-btn:hover::before {
-      transform: translateX(0);
-    }
-
-    /* Keep the icon and text above the sliding effect */
-    .cool-btn .content {
-      position: relative;
-      z-index: 2;
-    }
-
-    /* New: Icons in cool buttons */
-    .cool-btn .lucide {
-      transition: all 0.4s ease;
-    }
-    .cool-btn:hover .lucide {
-      transform: scale(1.1); /* icon grows on hover */
-      color: #fff; /* White color on hover */
     }
 
     .nav-link {
@@ -124,82 +90,283 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* Mobile menu styles */
+    .mobile-menu {
+      transform: translateX(100%);
+      transition: transform 0.3s ease-in-out;
+      background: rgba(10, 10, 10, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .mobile-menu.active {
+      transform: translateX(0);
+    }
+
+    /* Mobile menu overlay */
+    .mobile-menu-overlay {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .mobile-menu-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Mobile menu link styles */
+    .mobile-nav-link {
+      position: relative;
+      display: inline-block;
+      padding: 12px 0;
+      width: 100%;
+      text-align: left;
+    }
+    .mobile-nav-link::after {
+      content: "";
+      position: absolute;
+      width: 0%;
+      height: 1px;
+      left: 0;
+      bottom: 8px;
+      background: #fff;
+      transition: 0.3s;
+    }
+    .mobile-nav-link:hover::after {
+      width: 100%;
+    }
+
+    /* Prevent horizontal scrolling */
+    html, body {
+      overflow-x: hidden;
+    }
+
+    /* === Futuristic Button Styles === */
+    .futuristic-btn {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      border: 2px solid transparent;
+      background: linear-gradient(to bottom right, #1a1a1a, #2a2a2a);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      /* Increased border-radius for a more rounded button */
+      border-radius: 2rem;
+    }
+
+    .futuristic-btn::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        opacity: 0;
+
+        /* Updated: White aura effect on hover */
+        background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3), transparent 70%);
+        transform: scale(0.1);
+        transition: transform 0.4s ease, opacity 0.4s ease;
+        /* New: Make the pseudo-element a circle */
+        border-radius: 50%;
+    }
+
+    .futuristic-btn:hover::before {
+        opacity: 1;
+        transform: scale(1.5);
+    }
+
+    .futuristic-btn:hover {
+        transform: translateY(-5px) scale(1.02);
+
+        /* Updated: White shadow and border gradient */
+        box-shadow: 0 15px 30px rgba(255, 255, 255, 0.3);
+        border: 2px solid;
+        border-image: linear-gradient(45deg, #b0b0b0, #ffffff, #b0b0b0);
+        border-image-slice: 1;
+    }
+
+    .futuristic-btn .content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .futuristic-btn .lucide {
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .futuristic-btn:hover .lucide {
+      transform: scale(1.1) rotateY(180deg);
+      filter: drop-shadow(0 0 5px #fff);
+      color: #fff;
+    }
   </style>
 </head>
 <body class="text-white">
 
-<header class="fixed top-0 left-0 w-full bg-black/50 backdrop-blur-md border-b border-gray-800 z-50">
-  <div class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-    <h1 class="text-2xl font-black">WaryWEB</h1>
-    <nav class="flex gap-8 text-gray-300">
+<!-- Mobile menu overlay -->
+<div id="mobile-menu-overlay" class="mobile-menu-overlay fixed inset-0 z-40 md:hidden"></div>
+
+<header class="fixed top-0 left-0 w-full bg-black/80 backdrop-blur-md border-b border-gray-800 z-50">
+  <div class="max-w-6xl mx-auto flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+    <h1 class="text-xl sm:text-2xl font-black">WaryWEB</h1>
+
+    <!-- Centered Date & Time for Desktop -->
+    <div class="hidden sm:flex card-glass items-center gap-4 px-4 py-2 rounded-lg absolute left-1/2 transform -translate-x-1/2">
+      <div id="clock" class="text-lg font-bold"></div>
+      <div class="border-l border-gray-600 h-6"></div>
+      <div id="date" class="text-sm text-gray-300"></div>
+    </div>
+
+    <!-- Desktop Navigation - Moved to Right -->
+    <nav class="hidden md:flex gap-6 lg:gap-8 text-gray-300 ml-auto">
       <a href="#games" class="nav-link hover:text-white">Games</a>
       <a href="#utilities" class="nav-link hover:text-white">Utilities</a>
       <a href="#about" class="nav-link hover:text-white">About</a>
     </nav>
-    <div class="card-glass flex items-center gap-4 px-4 py-2 rounded-lg">
-      <div id="clock" class="text-lg font-bold">10:59</div>
-      <div class="border-l border-gray-600 h-6"></div>
-      <div id="date" class="text-sm text-gray-300">Dec, 2025</div>
+
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-button" class="md:hidden p-2 ml-auto">
+      <i data-lucide="menu" class="w-6 h-6"></i>
+    </button>
+  </div>
+
+  <!-- Mobile Navigation Menu -->
+  <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 h-full w-64 z-50 p-6 md:hidden">
+    <div class="flex justify-between items-center mb-10">
+      <h2 class="text-xl font-bold">Menu</h2>
+      <button id="close-menu" class="p-2">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+    <nav class="flex flex-col text-lg">
+      <a href="#games" class="mobile-nav-link hover:text-white">Games</a>
+      <a href="#utilities" class="mobile-nav-link hover:text-white">Utilities</a>
+      <a href="#about" class="mobile-nav-link hover:text-white">About</a>
+    </nav>
+    <div class="mt-10 pt-6 border-t border-gray-700">
+      <div class="flex items-center gap-3">
+        <i data-lucide="clock" class="w-5 h-5"></i>
+        <div id="mobile-clock" class="font-medium"></div>
+      </div>
+      <div class="flex items-center gap-3 mt-2">
+        <i data-lucide="calendar" class="w-5 h-5"></i>
+        <div id="mobile-date" class="text-gray-300"></div>
+      </div>
     </div>
   </div>
 </header>
 
-<section class="h-screen flex flex-col items-center justify-center text-center px-6">
-  <h2 class="text-5xl md:text-6xl font-extrabold mb-6">Welcome to <span class="text-purple-400">WaryWEB</span></h2>
-  <p class="text-gray-400 max-w-xl mb-10">Your modern hub for classic games and free tools. Dive into strategy, fun, and utilities—all in one place.</p>
-  <a href="#games" class="hero-btn px-8 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-semibold shadow-lg">Explore Now</a>
+<!-- Mobile date/time display for small screens - ALWAYS VISIBLE -->
+<div class="sm:hidden fixed top-16 right-4 z-40">
+  <div class="card-glass px-3 py-1 rounded-lg text-sm flex items-center gap-2">
+    <span id="mobile-time-small" class="font-medium"></span>
+    <span class="text-gray-300">•</span>
+    <span id="mobile-date-small"></span>
+  </div>
+</div>
+
+<section class="min-h-screen flex flex-col items-center justify-center text-center px-4 pt-16 pb-10">
+  <h2 class="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 sm:mb-6">Welcome to <span class="text-purple-400">WaryWEB</span></h2>
+  <p class="text-gray-400 max-w-xl mb-8 sm:mb-10 text-sm sm:text-base">Your modern hub for classic games and free tools. Dive into strategy, fun, and utilities—all in one place.</p>
+  <a href="#games" class="hero-btn px-6 py-3 sm:px-8 sm:py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-semibold shadow-lg text-sm sm:text-base">Explore Now</a>
 </section>
 
-<section id="games" class="py-20 px-6">
-  <div class="max-w-6xl mx-auto text-center mb-12">
-    <h3 class="text-3xl font-bold">Choose a Game</h3>
-    <p class="text-gray-400 mt-2">Classic and casual fun awaits you.</p>
+<section id="games" class="py-16 sm:py-20 px-4">
+  <div class="max-w-6xl mx-auto text-center mb-10 sm:mb-12">
+    <h3 class="text-2xl sm:text-3xl font-bold">Choose a Game</h3>
+    <p class="text-gray-400 mt-2 text-sm sm:text-base">Classic and casual fun awaits you.</p>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 fade-in">
-    <a href="chess.html" class="cool-btn p-10 rounded-2xl flex flex-col items-center text-center">
+  <div class="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 max-w-2xl md:max-w-6xl mx-auto fade-in">
+    <a href="chess.html" class="futuristic-btn p-6 rounded-2xl flex flex-col items-center text-center">
       <div class="content">
-        <i data-lucide="crown" class="w-16 h-16 mb-4 text-white"></i>
-        <h4 class="text-2xl font-bold">Chess</h4>
-        <p class="mt-2 text-gray-400">The timeless battle of strategy.</p>
+        <i data-lucide="crown" class="w-10 h-10 mb-2 text-white"></i>
+        <h4 class="text-lg font-bold">Chess</h4>
       </div>
     </a>
 
-    <a href="othergames.html" class="cool-btn p-10 rounded-2xl flex flex-col items-center text-center">
+    <a href="Uno.html" class="futuristic-btn p-6 rounded-2xl flex flex-col items-center text-center">
       <div class="content">
-        <i data-lucide="gamepad-2" class="w-16 h-16 mb-4 text-white"></i>
-        <h4 class="text-2xl font-bold">Other Games</h4>
-        <p class="mt-2 text-gray-400">Discover more fun inside.</p>
+        <i data-lucide="layers" class="w-10 h-10 mb-2 text-white"></i>
+        <h4 class="text-lg font-bold">Uno</h4>
+      </div>
+    </a>
+
+    <a href="Battleship.html" class="futuristic-btn p-6 rounded-2xl flex flex-col items-center text-center">
+      <div class="content">
+        <i data-lucide="ship" class="w-10 h-10 mb-2 text-white"></i>
+        <h4 class="text-lg font-bold">Battleship</h4>
+      </div>
+    </a>
+
+    <a href="Reversi.html" class="futuristic-btn p-6 rounded-2xl flex flex-col items-center text-center">
+      <div class="content">
+        <i data-lucide="circle-dot" class="w-10 h-10 mb-2 text-white"></i>
+        <h4 class="text-lg font-bold">Reversi</h4>
+      </div>
+    </a>
+
+    <a href="FoxsAndHoundsGame.html" class="futuristic-btn p-6 rounded-2xl flex flex-col items-center text-center">
+      <div class="content">
+        <i data-lucide="rabbit" class="w-10 h-10 mb-2 text-white"></i>
+        <h4 class="text-lg font-bold">Fox & Hounds</h4>
+      </div>
+    </a>
+
+    <a href="Dominos.html" class="futuristic-btn p-6 rounded-2xl flex flex-col items-center text-center">
+      <div class="content">
+        <i data-lucide="dice" class="w-10 h-10 mb-2 text-white"></i>
+        <h4 class="text-lg font-bold">Dominoes</h4>
+      </div>
+    </a>
+
+    <a href="Breakout.html" class="futuristic-btn p-6 rounded-2xl flex flex-col items-center text-center">
+      <div class="content">
+        <i data-lucide="box" class="w-10 h-10 mb-2 text-white"></i>
+        <h4 class="text-lg font-bold">Breakout</h4>
+      </div>
+    </a>
+
+    <a href="othergames.html" class="futuristic-btn p-6 rounded-2xl flex flex-col items-center text-center">
+      <div class="content">
+        <i data-lucide="gamepad-2" class="w-10 h-10 mb-2 text-white"></i>
+        <h4 class="text-lg font-bold">Other Games</h4>
       </div>
     </a>
   </div>
 </section>
 
-<section id="utilities" class="py-20 px-6 bg-gradient-to-b from-black/30 to-black/70">
-  <div class="max-w-6xl mx-auto text-center mb-12">
-    <h3 class="text-3xl font-bold">Free Utilities</h3>
-    <p class="text-gray-400 mt-2">Helpful tools built just for you.</p>
+<section id="utilities" class="py-16 sm:py-20 px-4 bg-gradient-to-b from-black/30 to-black/70">
+  <div class="max-w-6xl mx-auto text-center mb-10 sm:mb-12">
+    <h3 class="text-2xl sm:text-3xl font-bold">Free Utilities</h3>
+    <p class="text-gray-400 mt-2 text-sm sm:text-base">Helpful tools built just for you.</p>
   </div>
 
-  <a href="utility.html" class="cool-btn max-w-4xl mx-auto p-12 rounded-2xl flex flex-col sm:flex-row items-center gap-6 fade-in">
-    <div class="content">
-      <i data-lucide="wrench" class="w-20 h-20 text-white"></i>
+  <a href="utility.html" class="futuristic-btn max-w-4xl mx-auto p-6 sm:p-8 md:p-12 rounded-2xl flex flex-col sm:flex-row items-center gap-4 sm:gap-6 fade-in">
+    <div class="content flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left">
+      <i data-lucide="wrench" class="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 text-white"></i>
       <div>
-        <h4 class="text-2xl font-bold">Handy Tools</h4>
-        <p class="mt-2 text-gray-400">From quick converters to productivity enhancers—our utilities save you time.</p>
+        <h4 class="text-xl sm:text-2xl font-bold">Handy Tools</h4>
+        <p class="mt-2 text-gray-400 text-sm sm:text-base">From quick converters to productivity enhancers—our utilities save you time.</p>
       </div>
     </div>
   </a>
 </section>
 
-<section id="about" class="py-20 px-6">
+<section id="about" class="py-16 sm:py-20 px-4">
   <div class="max-w-5xl mx-auto text-center fade-in">
-    <h3 class="text-3xl font-bold">About WaryWEB</h3>
-    <p class="text-gray-400 mt-4">Powered by <span class="text-purple-400 font-semibold">Smanwary</span>, WaryWEB is designed to bring entertainment and utilities into a single, elegant platform. Whether you’re strategizing in chess, enjoying casual games, or using free utilities, we’ve got you covered.</p>
+    <h3 class="text-2xl sm:text-3xl font-bold">About WaryWEB</h3>
+    <p class="text-gray-400 mt-4 text-sm sm:text-base">Powered by <span class="text-purple-400 font-semibold">Smanwary</span>, WaryWEB is designed to bring entertainment and utilities into a single, elegant platform. Whether you're strategizing in chess, enjoying casual games, or using free utilities, we've got you covered.</p>
   </div>
 </section>
 
-<footer class="py-8 border-t border-gray-800 text-center text-gray-400">
+<footer class="py-6 sm:py-8 border-t border-gray-800 text-center text-gray-400 text-sm sm:text-base">
   <p>&copy; 2025 WaryWEB. All Rights Reserved.</p>
 </footer>
 
@@ -212,9 +379,18 @@
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
+
+    // Update all clock elements
     document.getElementById('clock').textContent = `${hours}:${minutes}`;
+    document.getElementById('mobile-clock').textContent = `${hours}:${minutes}`;
+    document.getElementById('mobile-time-small').textContent = `${hours}:${minutes}`;
+
+    // Update date elements
     const month = now.toLocaleString('default', { month: 'short' });
-    document.getElementById('date').textContent = `${month}, ${now.getFullYear()}`;
+    const dateText = `${month}, ${now.getFullYear()}`;
+    document.getElementById('date').textContent = dateText;
+    document.getElementById('mobile-date').textContent = dateText;
+    document.getElementById('mobile-date-small').textContent = dateText;
   }
   setInterval(updateTime, 1000);
   updateTime();
@@ -227,6 +403,27 @@
   }, { threshold: 0.2 });
 
   document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // Mobile menu functionality
+  const mobileMenuButton = document.getElementById('mobile-menu-button');
+  const closeMenuButton = document.getElementById('close-menu');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+
+  function toggleMobileMenu() {
+    mobileMenu.classList.toggle('active');
+    mobileMenuOverlay.classList.toggle('active');
+    document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+  }
+
+  mobileMenuButton.addEventListener('click', toggleMobileMenu);
+  closeMenuButton.addEventListener('click', toggleMobileMenu);
+  mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
+
+  // Close menu when clicking on links
+  document.querySelectorAll('#mobile-menu a').forEach(link => {
+    link.addEventListener('click', toggleMobileMenu);
+  });
 </script>
 </body>
 </html>
