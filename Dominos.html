@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WaryWEB - Dominoes</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #0a0a0a;
+        background-image: radial-gradient(circle at top right, rgba(255, 165, 0, 0.15), transparent 40%),
+                          radial-gradient(circle at bottom left, rgba(0, 200, 255, 0.15), transparent 50%);
+    }
+
+    .card-glass {
+        background: rgba(23, 23, 23, 0.65);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-link {
+        position: relative;
+    }
+    .nav-link::after {
+        content: "";
+        position: absolute;
+        width: 0%;
+        height: 2px;
+        left: 0;
+        bottom: -3px;
+        background: #fff;
+        transition: 0.3s;
+    }
+    .nav-link:hover::after {
+        width: 100%;
+    }
+
+    /* Mobile menu styles */
+    .mobile-menu {
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+    }
+    .mobile-menu.active {
+        transform: translateX(0);
+    }
+
+    /* Dominoes specific styling */
+    .domino {
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: #f7f7f7;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        cursor: pointer;
+        border: 1px solid #c0c0c0;
+        padding: 4px;
+        width: 50px;
+        height: 90px;
+        margin: 4px;
+        flex-shrink: 0;
+        user-select: none;
+    }
+
+    button.domino {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border: 1px solid #c0c0c0;
+        background-color: #f7f7f7;
+        padding: 4px;
+    }
+
+    .domino.double {
+        width: 90px;
+        height: 50px;
+        flex-direction: row;
+    }
+
+    .domino.rotated {
+        transform: rotate(90deg);
+    }
+
+    .domino:hover:not(.placeholder, .face-down) {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .domino:focus:not(.face-down) {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+    }
+
+    .domino-half {
+        width: 100%;
+        height: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #1a1a1a;
+        font-weight: bold;
+    }
+
+    .domino-half.double {
+        width: 50%;
+        height: 100%;
+    }
+
+    .domino-divider {
+        height: 2px;
+        width: 80%;
+        background-color: #4a4a4a;
+        border-radius: 1px;
+        margin: 2px 0;
+    }
+
+    .dots-container {
+        display: grid;
+        width: 100%;
+        height: 100%;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        grid-template-areas:
+            "tl c_midl tr"
+            "cl c_midr cr"
+            "bl b_midr br";
+        padding: 5px;
+        box-sizing: border-box;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        background-color: #1a1a1a;
+        border-radius: 50%;
+        justify-self: center;
+        align-self: center;
+    }
+
+    /* Specific dot layouts using grid areas */
+    .dots-1 .dot:nth-child(1) { grid-area: c_midr; }
+
+    .dots-2 .dot:nth-child(1) { grid-area: tl; }
+    .dots-2 .dot:nth-child(2) { grid-area: br; }
+
+    .dots-3 .dot:nth-child(1) { grid-area: tl; }
+    .dots-3 .dot:nth-child(2) { grid-area: c_midr; }
+    .dots-3 .dot:nth-child(3) { grid-area: br; }
+
+    .dots-4 .dot:nth-child(1) { grid-area: tl; }
+    .dots-4 .dot:nth-child(2) { grid-area: tr; }
+    .dots-4 .dot:nth-child(3) { grid-area: bl; }
+    .dots-4 .dot:nth-child(4) { grid-area: br; }
+
+    .dots-5 .dot:nth-child(1) { grid-area: tl; }
+    .dots-5 .dot:nth-child(2) { grid-area: tr; }
+    .dots-5 .dot:nth-child(3) { grid-area: c_midr; }
+    .dots-5 .dot:nth-child(4) { grid-area: bl; }
+    .dots-5 .dot:nth-child(5) { grid-area: br; }
+
+    .dots-6 .dot:nth-child(1) { grid-area: tl; }
+    .dots-6 .dot:nth-child(2) { grid-area: tr; }
+    .dots-6 .dot:nth-child(3) { grid-area: cl; }
+    .dots-6 .dot:nth-child(4) { grid-area: cr; }
+    .dots-6 .dot:nth-child(5) { grid-area: bl; }
+    .dots-6 .dot:nth-child(6) { grid-area: br; }
+
+
+    .domino.face-down {
+        background-color: #3b82f6;
+        border: 1px solid #1e40af;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+        cursor: default;
+    }
+
+    .domino.face-down .domino-half,
+    .domino.face-down .domino-divider {
+        display: none;
+    }
+
+    #game-board-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 120px;
+        max-width: 90%;
+        overflow-x: auto;
+        padding: 10px;
+        background-color: #2a2a2a;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+
+    #game-board {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 8px;
+        padding: 0 16px;
+    }
+
+    .player-hand, .ai-hand {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        max-width: 90%;
+        padding: 10px;
+        background-color: #2a2a2a;
+        border-radius: 12px;
+        margin-top: 10px;
+        white-space: nowrap;
+        gap: 8px;
+    }
+
+    .boneyard-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .boneyard-stack {
+        position: relative;
+        width: 90px;
+        height: 50px;
+    }
+
+    .boneyard-stack .domino {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+    }
+    .modal-content {
+        background-color: #1a1a1a;
+        padding: 32px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .floating-message {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #1a1a1a;
+        color: #fff;
+        padding: 1rem 2rem;
+        border-radius: 0.75rem;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        z-index: 90;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+    .floating-message.active {
+        opacity: 1;
+    }
+
+    .side-btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: background-color 0.2s ease;
+    }
+
+    .side-btn.left {
+        background-color: #ef4444;
+        color: white;
+    }
+
+    .side-btn.right {
+        background-color: #22c55e;
+        color: white;
+    }
+
+    .domino.highlighted {
+        border: 2px solid #3b82f6;
+        box-shadow: 0 0 10px #3b82f6;
+    }
+  </style>
+</head>
+<body class="text-white">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full bg-black/80 backdrop-blur-md border-b border-gray-800 z-50">
+  <div class="max-w-6xl mx-auto flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+    <a href="index.html" class="text-xl sm:text-2xl font-black">WaryWEB</a>
+
+    <nav class="hidden md:flex gap-6 lg:gap-8 text-gray-300">
+      <a href="#" class="nav-link hover:text-white">Games</a>
+      <a href="#" class="nav-link hover:text-white">Utilities</a>
+      <a href="#" class="nav-link hover:text-white">About</a>
+    </nav>
+
+    <button id="mobile-menu-button" class="md:hidden p-2">
+      <i data-lucide="menu" class="w-6 h-6"></i>
+    </button>
+
+    <div class="hidden sm:flex card-glass items-center gap-4 px-4 py-2 rounded-lg">
+      <div id="clock" class="text-lg font-bold">10:59</div>
+      <div class="border-l border-gray-600 h-6"></div>
+      <div id="date" class="text-sm text-gray-300">Dec, 2025</div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-black/95 backdrop-blur-lg z-50 p-6 md:hidden">
+    <div class="flex justify-between items-center mb-10">
+      <h2 class="text-xl font-bold">Menu</h2>
+      <button id="close-menu" class="p-2">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+    <nav class="flex flex-col gap-6 text-lg">
+      <a href="#" class="nav-link hover:text-white py-2">Games</a>
+      <a href="#" class="nav-link hover:text-white py-2">Utilities</a>
+      <a href="#" class="nav-link hover:text-white py-2">About</a>
+    </nav>
+    <div class="mt-10 pt-6 border-t border-gray-700">
+      <div class="flex items-center gap-3">
+        <i data-lucide="clock" class="w-5 h-5"></i>
+        <div id="mobile-clock" class="font-medium">10:59</div>
+      </div>
+      <div class="flex items-center gap-3 mt-2">
+        <i data-lucide="calendar" class="w-5 h-5"></i>
+        <div id="mobile-date" class="text-gray-300">Dec, 2025</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Small Mobile Time/Date -->
+<div class="sm:hidden fixed top-16 right-4 z-40">
+  <div class="card-glass px-3 py-1 rounded-lg text-sm flex items-center gap-2">
+    <span id="mobile-time-small" class="font-medium">10:59</span>
+    <span class="text-gray-300">•</span>
+    <span id="mobile-date-small">Dec, 2025</span>
+  </div>
+</div>
+
+<!-- Dominoes Game Section -->
+<section id="dominoes-game-section" class="py-24 px-6 min-h-screen flex flex-col items-center justify-center">
+  <div class="max-w-6xl w-full mx-auto p-6 md:p-12 card-glass rounded-2xl relative">
+    <div class="max-w-6xl w-full mx-auto text-center mb-8">
+      <h3 id="game-title" class="text-4xl font-bold">Dominoes</h3>
+      <p class="text-gray-400 mt-2">Play a game of classic dominoes against the AI.</p>
+    </div>
+
+    <!-- AI Hand -->
+    <div class="flex flex-col items-center mb-4">
+      <p class="text-sm text-gray-400">AI's Hand (<span id="ai-hand-count">0</span>)</p>
+      <div id="ai-hand" class="ai-hand min-h-[90px] w-full"></div>
+    </div>
+
+    <!-- Boneyard -->
+    <div class="flex flex-col items-center gap-2 mb-4">
+      <p class="text-sm text-gray-400">Boneyard (<span id="boneyard-count">0</span>)</p>
+      <div id="boneyard" class="boneyard-stack flex justify-center items-center w-24 h-16 relative">
+        <div class="domino face-down"></div>
+      </div>
+    </div>
+
+    <!-- Game Board -->
+    <div id="game-board-container">
+      <div id="game-board" class="flex items-center flex-wrap justify-center"></div>
+    </div>
+
+    <!-- Player Hand -->
+    <div class="flex flex-col items-center mt-4">
+      <p class="text-sm text-gray-400">Your Hand (<span id="player-hand-count">0</span>)</p>
+      <div id="player-hand" class="player-hand min-h-[90px] w-full"></div>
+    </div>
+
+    <!-- Player Actions and Messages -->
+    <div class="flex flex-col items-center justify-center mt-6">
+      <!-- Game Status -->
+      <p id="game-message" class="text-lg text-center mb-4 h-12 flex items-center justify-center">Dealing the dominoes...</p>
+
+      <!-- Player Actions and Side Selection -->
+      <div class="flex gap-4">
+        <!-- Main action buttons -->
+        <button id="draw-button" class="px-6 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 font-semibold transition-colors duration-200" disabled>Draw</button>
+        <button id="pass-button" class="px-6 py-2 rounded-xl bg-gray-600 hover:bg-gray-700 font-semibold transition-colors duration-200 hidden">Pass</button>
+
+        <!-- Side selection buttons (initially hidden) -->
+        <div id="side-buttons" class="hidden flex gap-4">
+          <button id="left-side-btn" class="side-btn left">Left</button>
+          <button id="right-side-btn" class="side-btn right">Right</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Floating Message -->
+<div id="floating-message" class="floating-message"></div>
+
+<!-- Game Over Modal -->
+<div id="game-over-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h2 id="end-game-message" class="text-3xl font-bold mb-4"></h2>
+    <button id="play-again-button" class="px-6 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors duration-200">Restart Game</button>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="py-6 sm:py-8 border-t border-gray-800 text-center text-gray-400 text-sm sm:text-base">
+  <p>&copy; 2025 WaryWEB. All Rights Reserved.</p>
+</footer>
+
+<script>
+  // --- Global Clock + Date ---
+  function updateTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${hours}:${minutes}`;
+      document.getElementById('mobile-clock').textContent = `${hours}:${minutes}`;
+      document.getElementById('mobile-time-small').textContent = `${hours}:${minutes}`;
+      const month = now.toLocaleString('default', { month: 'short' });
+      const dateText = `${month}, ${now.getFullYear()}`;
+      document.getElementById('date').textContent = dateText;
+      document.getElementById('mobile-date').textContent = dateText;
+      document.getElementById('mobile-date-small').textContent = dateText;
+  }
+  updateTime();
+  setInterval(updateTime, 60000);
+
+  // Mobile menu toggle
+  document.getElementById('mobile-menu-button').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.add('active');
+  });
+  document.getElementById('close-menu').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.remove('active');
+  });
+
+  // --- Dominoes Game Logic ---
+  // --- DOM Elements ---
+  const gameMessageEl = document.getElementById('game-message');
+  const playerHandEl = document.getElementById('player-hand');
+  const aiHandEl = document.getElementById('ai-hand');
+  const aiHandCountEl = document.getElementById('ai-hand-count');
+  const gameBoardEl = document.getElementById('game-board');
+  const boneyardCountEl = document.getElementById('boneyard-count');
+  const playerHandCountEl = document.getElementById('player-hand-count');
+  const drawButton = document.getElementById('draw-button');
+  const passButton = document.getElementById('pass-button');
+  const gameOverModal = document.getElementById('game-over-modal');
+  const endGameMessageEl = document.getElementById('end-game-message');
+  const playAgainButton = document.getElementById('play-again-button');
+  const sideButtonsContainer = document.getElementById('side-buttons');
+  const leftSideBtn = document.getElementById('left-side-btn');
+  const rightSideBtn = document.getElementById('right-side-btn');
+  const floatingMessageEl = document.getElementById('floating-message');
+
+  // --- Game State Variables ---
+  let gameActive = false;
+  let deck = [];
+  let boneyard = [];
+  let playerHand = [];
+  let aiHand = [];
+  let board = [];
+  let currentTurn = 'player';
+  let selectedDomino = null;
+  let aiIsThinking = false;
+
+  /**
+   * Creates a domino element with dots based on its value.
+   * @param {number} value The number of dots (0-6).
+   * @returns {HTMLElement} The domino half element.
+   */
+  function createDominoHalf(value) {
+      const halfEl = document.createElement('div');
+      halfEl.className = 'domino-half';
+      if (value > 0) {
+          const dotsContainer = document.createElement('div');
+          dotsContainer.className = `dots-container dots-${value}`;
+
+          const dotCounts = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6 };
+
+          const numDots = dotCounts[value];
+          if (numDots) {
+              for (let i = 0; i < numDots; i++) {
+                  const dotEl = document.createElement('div');
+                  dotEl.className = 'dot';
+                  dotsContainer.appendChild(dotEl);
+              }
+          }
+
+          halfEl.appendChild(dotsContainer);
+      }
+      return halfEl;
+  }
+
+  /**
+   * Creates all 28 dominoes from [0,0] to [6,6].
+   */
+  function createDominoes() {
+      deck = [];
+      for (let i = 0; i <= 6; i++) {
+          for (let j = i; j <= 6; j++) {
+              deck.push({ v1: i, v2: j });
+          }
+      }
+  }
+
+  /**
+   * Shuffles an array in place using the Fisher-Yates algorithm.
+   * @param {Array} arr The array to shuffle.
+   */
+  function shuffleDeck(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+  }
+
+  /**
+   * Deals 7 dominoes to each player and places the rest in the boneyard.
+   */
+  function dealHands() {
+      shuffleDeck(deck);
+      playerHand = deck.slice(0, 7);
+      aiHand = deck.slice(7, 14);
+      boneyard = deck.slice(14);
+  }
+
+  /**
+   * Determines which player starts the game.
+   */
+  function determineStarter() {
+      let playerHighestDouble = -1;
+      let aiHighestDouble = -1;
+      let playerStartDomino = null;
+      let aiStartDomino = null;
+
+      playerHand.forEach(d => {
+          if (d.v1 === d.v2 && d.v1 > playerHighestDouble) {
+              playerHighestDouble = d.v1;
+              playerStartDomino = d;
+          }
+      });
+
+      aiHand.forEach(d => {
+          if (d.v1 === d.v2 && d.v1 > aiHighestDouble) {
+              aiHighestDouble = d.v1;
+              aiStartDomino = d;
+          }
+      });
+
+      if (playerHighestDouble > aiHighestDouble) {
+          playFirstMove(playerHand, playerStartDomino, 'player');
+          return 'player';
+      } else if (aiHighestDouble > playerHighestDouble) {
+          playFirstMove(aiHand, aiStartDomino, 'ai');
+          return 'ai';
+      }
+
+      let playerHighestSum = -1;
+      let aiHighestSum = -1;
+      playerStartDomino = null;
+      aiStartDomino = null;
+
+      playerHand.forEach(d => {
+          const sum = d.v1 + d.v2;
+          if (sum > playerHighestSum) {
+              playerHighestSum = sum;
+              playerStartDomino = d;
+          }
+      });
+
+      aiHand.forEach(d => {
+          const sum = d.v1 + d.v2;
+          if (sum > aiHighestSum) {
+              aiHighestSum = sum;
+              aiStartDomino = d;
+          }
+      });
+
+      if (playerHighestSum >= aiHighestSum) {
+          playFirstMove(playerHand, playerStartDomino, 'player');
+          return 'player';
+      } else {
+          playFirstMove(aiHand, aiStartDomino, 'ai');
+          return 'ai';
+      }
+  }
+
+  /**
+   * Plays the first domino of the game.
+   */
+  function playFirstMove(hand, domino, player) {
+      const dominoIndex = hand.indexOf(domino);
+      if (dominoIndex > -1) {
+          board.push(domino);
+          hand.splice(dominoIndex, 1);
+      }
+  }
+
+  /**
+   * Renders a single domino element.
+   */
+  function renderDomino(domino, faceDown = false, type = 'div') {
+      const dominoEl = document.createElement(type);
+      dominoEl.className = `domino ${faceDown ? 'face-down' : ''} ${domino.v1 === domino.v2 ? 'double' : ''}`;
+      if (!faceDown) {
+          dominoEl.appendChild(createDominoHalf(domino.v1));
+          if (domino.v1 !== domino.v2) {
+              const divider = document.createElement('div');
+              divider.className = 'domino-divider';
+              dominoEl.appendChild(divider);
+          }
+          dominoEl.appendChild(createDominoHalf(domino.v2));
+          if (type === 'button') {
+              dominoEl.setAttribute('aria-label', `Domino with ${domino.v1} and ${domino.v2} pips.`);
+          }
+      }
+      return dominoEl;
+  }
+
+  /**
+   * Renders the player's hand.
+   */
+  function renderPlayerHand() {
+      playerHandEl.innerHTML = '';
+      playerHandCountEl.textContent = playerHand.length;
+      const validMoves = getValidMoves(playerHand, board);
+
+      playerHand.forEach((domino, index) => {
+          const dominoEl = renderDomino(domino, false, 'button');
+          dominoEl.dataset.index = index;
+          const isPlayable = validMoves.some(move => move.domino === domino);
+          if (isPlayable) {
+              dominoEl.classList.add('playable');
+              dominoEl.addEventListener('click', () => {
+                  handlePlayerSelect(domino, index);
+              });
+          } else {
+              dominoEl.disabled = true;
+          }
+          playerHandEl.appendChild(dominoEl);
+      });
+  }
+
+  /**
+   * Renders the AI's hand as face-down dominoes.
+   */
+  function renderAIHand() {
+      aiHandEl.innerHTML = '';
+      aiHandCountEl.textContent = aiHand.length;
+      aiHand.forEach(() => {
+          const dominoEl = renderDomino({ v1: 0, v2: 0 }, true);
+          aiHandEl.appendChild(dominoEl);
+      });
+  }
+
+  /**
+   * Renders the game board with dominoes.
+   */
+  function renderBoard() {
+      gameBoardEl.innerHTML = '';
+      board.forEach(domino => {
+          const dominoEl = renderDomino(domino);
+          gameBoardEl.appendChild(dominoEl);
+      });
+  }
+
+  /**
+   * Renders the boneyard.
+   */
+  function renderBoneyard() {
+      boneyardCountEl.textContent = boneyard.length;
+  }
+
+  /**
+   * Shows a temporary message in the middle of the screen.
+   * @param {string} message The message to display.
+   */
+  function showFloatingMessage(message) {
+      floatingMessageEl.textContent = message;
+      floatingMessageEl.classList.add('active');
+      setTimeout(() => {
+          floatingMessageEl.classList.remove('active');
+      }, 2000);
+  }
+
+  /**
+   * Handles the player's selection of a domino.
+   */
+  function handlePlayerSelect(domino, index) {
+      if (currentTurn !== 'player' || aiIsThinking) return;
+
+      // Reset any previous highlights
+      document.querySelectorAll('.domino.highlighted').forEach(el => el.classList.remove('highlighted'));
+
+      // If the same domino is clicked again, deselect it
+      if (selectedDomino && selectedDomino.domino === domino) {
+          selectedDomino = null;
+          gameMessageEl.textContent = "Choose a domino to play.";
+          sideButtonsContainer.classList.add('hidden');
+          updatePlayerActionsUI();
+          return;
+      }
+
+      // Highlight the selected domino
+      selectedDomino = { domino: domino, index: index };
+      document.querySelector(`[data-index="${index}"]`).classList.add('highlighted');
+
+      const validMoves = getValidMoves([domino], board);
+
+      if (validMoves.length > 0) {
+          gameMessageEl.textContent = 'Choose where to place the domino.';
+          sideButtonsContainer.classList.remove('hidden');
+          drawButton.classList.add('hidden');
+          passButton.classList.add('hidden');
+      } else {
+          // This case should not be possible with the current logic, but is here for safety.
+          const leftEnd = board.length > 0 ? board[0].v1 : null;
+          const rightEnd = board.length > 0 ? board[board.length - 1].v2 : null;
+          let message = "That domino cannot be played.";
+          if (board.length > 0) {
+              message += ` Try to match either a ${leftEnd} or a ${rightEnd}.`;
+          }
+          showFloatingMessage(message);
+          selectedDomino = null;
+          document.querySelector(`[data-index="${index}"]`).classList.remove('highlighted');
+      }
+  }
+
+  /**
+   * Plays a domino on the board.
+   */
+  function playDomino(hand, index, side) {
+      const domino = hand.splice(index, 1)[0];
+      const leftEnd = board.length > 0 ? board[0].v1 : null;
+      const rightEnd = board.length > 0 ? board[board.length - 1].v2 : null;
+
+      if (board.length === 0) {
+           board.push(domino);
+      } else if (side === 'left') {
+          if (domino.v1 !== leftEnd) {
+              [domino.v1, domino.v2] = [domino.v2, domino.v1];
+          }
+          board.unshift(domino);
+      } else if (side === 'right') {
+          if (domino.v2 !== rightEnd) {
+              [domino.v1, domino.v2] = [domino.v2, domino.v1];
+          }
+          board.push(domino);
+      }
+
+      selectedDomino = null;
+      sideButtonsContainer.classList.add('hidden');
+      endTurn();
+  }
+
+  /**
+   * Checks for a winner or a blocked game.
+   */
+  function checkGameStatus() {
+      if (playerHand.length === 0) {
+          endGame('player');
+          return;
+      }
+      if (aiHand.length === 0) {
+          endGame('ai');
+          return;
+      }
+
+      const playerValidMoves = getValidMoves(playerHand, board);
+      const aiValidMoves = getValidMoves(aiHand, board);
+
+      if (playerValidMoves.length === 0 && aiValidMoves.length === 0 && boneyard.length === 0) {
+          endGame('blocked');
+      }
+  }
+
+  /**
+   * Calculates the total pips (score) of a hand.
+   * @param {Array} hand The hand to score.
+   * @returns {number} The total score.
+   */
+  function calculateScore(hand) {
+      return hand.reduce((total, domino) => total + domino.v1 + domino.v2, 0);
+  }
+
+  /**
+   * Ends the game and displays a message.
+   */
+  function endGame(winner) {
+      gameActive = false;
+      let message = '';
+      if (winner === 'player') {
+          message = "Congratulations! You won!";
+      } else if (winner === 'ai') {
+          message = "The AI won. Better luck next time!";
+      } else {
+          const playerScore = calculateScore(playerHand);
+          const aiScore = calculateScore(aiHand);
+
+          if (playerScore < aiScore) {
+              message = `Game blocked! You win with ${playerScore} pips! The AI had ${aiScore} pips.`;
+          } else if (aiScore < playerScore) {
+              message = `Game blocked! The AI wins with ${aiScore} pips! You had ${playerScore} pips.`;
+          } else {
+              message = `Game blocked! It's a tie with both players at ${playerScore} pips!`;
+          }
+      }
+      endGameMessageEl.textContent = message;
+      gameOverModal.style.display = 'flex';
+      drawButton.classList.add('hidden');
+      passButton.classList.add('hidden');
+      sideButtonsContainer.classList.add('hidden');
+  }
+
+  /**
+   * Handles the end of a turn, switching to the other player.
+   */
+  function endTurn() {
+      renderBoard();
+      renderPlayerHand();
+      renderAIHand();
+      renderBoneyard();
+      checkGameStatus();
+
+      if (gameActive) {
+          if (currentTurn === 'player') {
+              currentTurn = 'ai';
+              gameMessageEl.textContent = "AI's turn...";
+              updatePlayerActionsUI();
+              setTimeout(handleAIMove, 1500);
+          } else {
+              currentTurn = 'player';
+              gameMessageEl.textContent = "Your turn. Choose a domino to play.";
+              updatePlayerActionsUI();
+          }
+      }
+  }
+
+  /**
+   * Finds all valid moves for a given hand.
+   */
+  function getValidMoves(hand, board) {
+      const validMoves = [];
+      if (board.length === 0) {
+          hand.forEach(domino => {
+              validMoves.push({ domino, side: 'any' });
+          });
+          return validMoves;
+      }
+
+      const leftEnd = board[0].v1;
+      const rightEnd = board[board.length - 1].v2;
+
+      hand.forEach(domino => {
+          if (domino.v1 === leftEnd || domino.v2 === leftEnd) {
+              validMoves.push({ domino, side: 'left' });
+          }
+          if (domino.v1 === rightEnd || domino.v2 === rightEnd) {
+              validMoves.push({ domino, side: 'right' });
+          }
+      });
+      return validMoves;
+  }
+
+  /**
+   * Handles the AI's turn.
+   */
+  function handleAIMove() {
+      aiIsThinking = true;
+      const validMoves = getValidMoves(aiHand, board);
+
+      if (validMoves.length > 0) {
+          let bestMoves = [];
+          let highestScore = -1;
+
+          validMoves.forEach(move => {
+              const domino = move.domino;
+              let score = domino.v1 + domino.v2;
+              if (domino.v1 === domino.v2) {
+                  score += 100;
+              }
+
+              if (score > highestScore) {
+                  highestScore = score;
+                  bestMoves = [move];
+              } else if (score === highestScore) {
+                  bestMoves.push(move);
+              }
+          });
+
+          const bestMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
+
+          const { domino, side } = bestMove;
+          const index = aiHand.indexOf(domino);
+
+          if (side === 'left') {
+              if (domino.v1 !== board[0].v1) { [domino.v1, domino.v2] = [domino.v2, domino.v1]; }
+              board.unshift(domino);
+          } else {
+              if (domino.v2 !== board[board.length - 1].v2) { [domino.v1, domino.v2] = [domino.v2, domino.v1]; }
+              board.push(domino);
+          }
+          aiHand.splice(index, 1);
+      } else {
+          if (boneyard.length > 0) {
+              aiHand.push(boneyard.shift());
+              gameMessageEl.textContent = "AI drew a domino.";
+          } else {
+              gameMessageEl.textContent = "AI must pass.";
+          }
+      }
+      aiIsThinking = false;
+      endTurn();
+  }
+
+  /**
+   * Updates the UI to show the correct action buttons for the player.
+   */
+  function updatePlayerActionsUI() {
+      // Reset button visibility first
+      drawButton.classList.add('hidden');
+      passButton.classList.add('hidden');
+      sideButtonsContainer.classList.add('hidden');
+
+      const playerValidMoves = getValidMoves(playerHand, board);
+      const hasBoneyardDominoes = boneyard.length > 0;
+
+      // If there are no valid moves, a player must draw or pass.
+      if (playerValidMoves.length === 0) {
+          if (hasBoneyardDominoes) {
+              drawButton.classList.remove('hidden');
+              drawButton.disabled = false;
+              gameMessageEl.textContent = "No valid moves. You must draw from the boneyard.";
+          } else {
+              passButton.classList.remove('hidden');
+              gameMessageEl.textContent = "No valid moves and the boneyard is empty. You must pass.";
+          }
+      } else {
+          // Player has valid moves, so they can't draw or pass yet.
+          gameMessageEl.textContent = "Your turn. Choose a domino to play.";
+      }
+  }
+
+
+  /**
+   * Initializes and starts a new game.
+   */
+  function startGame() {
+      createDominoes();
+      dealHands();
+      gameOverModal.style.display = 'none';
+      sideButtonsContainer.classList.add('hidden');
+      gameActive = true;
+
+      const startingPlayer = determineStarter();
+
+      currentTurn = startingPlayer;
+
+      if (currentTurn === 'player') {
+          updatePlayerActionsUI();
+      } else {
+          gameMessageEl.textContent = "AI starts the game...";
+          setTimeout(handleAIMove, 1000);
+      }
+      renderPlayerHand();
+      renderAIHand();
+      renderBoneyard();
+      renderBoard();
+  }
+
+  drawButton.addEventListener('click', () => {
+      if (currentTurn !== 'player' || aiIsThinking) return;
+      if (boneyard.length > 0) {
+          const drawnDomino = boneyard.shift();
+          playerHand.push(drawnDomino);
+          gameMessageEl.textContent = "You drew a domino.";
+          renderPlayerHand();
+          renderBoneyard();
+
+          // Now that the hand is updated, re-evaluate and update the UI
+          updatePlayerActionsUI();
+      } else {
+          gameMessageEl.textContent = "Boneyard is empty. You must pass.";
+          updatePlayerActionsUI();
+      }
+  });
+
+  passButton.addEventListener('click', () => {
+      if (currentTurn !== 'player' || aiIsThinking) return;
+      gameMessageEl.textContent = "You passed your turn.";
+      endTurn();
+  });
+
+  leftSideBtn.addEventListener('click', () => {
+      if (selectedDomino) {
+          const validMoves = getValidMoves([selectedDomino.domino], board);
+          if (validMoves.some(m => m.side === 'left')) {
+              playDomino(playerHand, selectedDomino.index, 'left');
+          } else {
+              showFloatingMessage("Cannot play on the left side.");
+          }
+      }
+  });
+
+  rightSideBtn.addEventListener('click', () => {
+      if (selectedDomino) {
+          const validMoves = getValidMoves([selectedDomino.domino], board);
+          if (validMoves.some(m => m.side === 'right')) {
+              playDomino(playerHand, selectedDomino.index, 'right');
+          } else {
+              showFloatingMessage("Cannot play on the right side.");
+          }
+      }
+  });
+
+  playAgainButton.addEventListener('click', startGame);
+
+  window.onload = startGame;
+</script>
+</body>
+</html>

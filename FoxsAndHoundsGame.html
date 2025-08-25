@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WaryWEB - Fox and Hounds</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+          font-family: 'Inter', sans-serif;
+          background-color: #0a0a0a;
+          background-image: radial-gradient(circle at top right, rgba(121, 68, 255, 0.15), transparent 40%),
+                            radial-gradient(circle at bottom left, rgba(0, 122, 255, 0.15), transparent 50%);
+        }
+
+        .card-glass {
+          background: rgba(23, 23, 23, 0.65);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-link {
+          position: relative;
+        }
+        .nav-link::after {
+          content: "";
+          position: absolute;
+          width: 0%;
+          height: 2px;
+          left: 0;
+          bottom: -3px;
+          background: #fff;
+          transition: 0.3s;
+        }
+        .nav-link:hover::after {
+          width: 100%;
+        }
+
+        /* Mobile menu styles */
+        .mobile-menu {
+          transform: translateX(100%);
+          transition: transform 0.3s ease-in-out;
+        }
+        .mobile-menu.active {
+          transform: translateX(0);
+        }
+
+        /* Prevent horizontal scrolling */
+        html, body {
+          overflow-x: hidden;
+        }
+
+        /* --- Fox and Hounds Game Styling --- */
+        #fox-hounds-board {
+          display: grid;
+          grid-template-columns: repeat(8, 1fr);
+          width: 480px; /* 60px * 8 */
+          height: 480px;
+          border: 4px solid #1f2937;
+        }
+
+        .fox-hounds-cell {
+          width: 60px;
+          height: 60px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 2.5rem;
+          user-select: none;
+          cursor: pointer;
+        }
+
+        .cell-light {
+          background-color: #e5e7eb;
+        }
+
+        .cell-dark {
+          background-color: #4b5563;
+        }
+
+        .fox-hounds-piece {
+          cursor: pointer;
+          transition: transform 0.1s ease-in-out;
+        }
+
+        .fox-hounds-cell.selected {
+          background-color: #fcd34d !important;
+          box-shadow: 0 0 10px #f59e0b;
+        }
+
+        .fox-hounds-cell.highlight {
+          background-color: #34d399 !important;
+          box-shadow: inset 0 0 10px #10b981;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 640px) {
+          #fox-hounds-board {
+            width: 100%;
+            max-width: 320px;
+            height: 320px;
+          }
+          .fox-hounds-cell {
+            width: 40px;
+            height: 40px;
+            font-size: 1.5rem;
+          }
+        }
+    </style>
+</head>
+<body class="text-white">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full bg-black/80 backdrop-blur-md border-b border-gray-800 z-50">
+    <div class="max-w-6xl mx-auto flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+        <a href="index.html" class="text-xl sm:text-2xl font-black">WaryWEB</a>
+
+        <nav class="hidden md:flex gap-6 lg:gap-8 text-gray-300">
+            <a href="games.html" class="nav-link hover:text-white">Games</a>
+            <a href="utilities.html" class="nav-link hover:text-white">Utilities</a>
+            <a href="index.html#about" class="nav-link hover:text-white">About</a>
+        </nav>
+
+        <button id="mobile-menu-button" class="md:hidden p-2">
+            <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+
+        <div class="hidden sm:flex card-glass items-center gap-4 px-4 py-2 rounded-lg">
+            <div id="clock" class="text-lg font-bold">10:59</div>
+            <div class="border-l border-gray-600 h-6"></div>
+            <div id="date" class="text-sm text-gray-300">Dec, 2025</div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-black/95 backdrop-blur-lg z-50 p-6 md:hidden">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-xl font-bold">Menu</h2>
+            <button id="close-menu" class="p-2">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <nav class="flex flex-col gap-6 text-lg">
+            <a href="games.html" class="nav-link hover:text-white py-2">Games</a>
+            <a href="utilities.html" class="nav-link hover:text-white py-2">Utilities</a>
+            <a href="index.html#about" class="nav-link hover:text-white py-2">About</a>
+        </nav>
+        <div class="mt-10 pt-6 border-t border-gray-700">
+            <div class="flex items-center gap-3">
+                <i data-lucide="clock" class="w-5 h-5"></i>
+                <div id="mobile-clock" class="font-medium">10:59</div>
+            </div>
+            <div class="flex items-center gap-3 mt-2">
+                <i data-lucide="calendar" class="w-5 h-5"></i>
+                <div id="mobile-date" class="text-gray-300">Dec, 2025</div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Small Mobile Time/Date -->
+<div class="sm:hidden fixed top-16 right-4 z-40">
+    <div class="card-glass px-3 py-1 rounded-lg text-sm flex items-center gap-2">
+        <span id="mobile-time-small" class="font-medium">10:59</span>
+        <span class="text-gray-300">•</span>
+        <span id="mobile-date-small">Dec, 2025</span>
+    </div>
+</div>
+
+<!-- Fox and Hounds Section -->
+<section id="fox-hounds-section" class="py-24 px-6 min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-black/30 to-black/70">
+    <div class="max-w-6xl w-full mx-auto text-center mb-12">
+        <h3 class="text-4xl font-bold">Fox and Hounds</h3>
+        <p class="text-gray-400 mt-2">A strategic two-player game. The Hounds try to trap the Fox, while the Fox tries to reach the other side of the board.</p>
+    </div>
+
+    <div class="max-w-5xl w-full mx-auto p-6 md:p-12 card-glass rounded-2xl">
+        <div class="flex flex-col items-center gap-6">
+            <div id="fox-hounds-board" class="shadow-lg"></div>
+            <div class="flex flex-col sm:flex-row items-center gap-4 mt-2">
+                <button onclick="startFoxHoundsGame()" class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold">New Game</button>
+                <p id="fox-hounds-message" class="text-lg font-bold">Hounds' Turn</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="py-6 sm:py-8 border-t border-gray-800 text-center text-gray-400 text-sm sm:text-base">
+    <p>&copy; 2025 WaryWEB. All Rights Reserved.</p>
+</footer>
+
+<script>
+    // --- Global Clock + Date ---
+    function updateTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+
+      // Update all clock elements
+      document.getElementById('clock').textContent = `${hours}:${minutes}`;
+      document.getElementById('mobile-clock').textContent = `${hours}:${minutes}`;
+      document.getElementById('mobile-time-small').textContent = `${hours}:${minutes}`;
+
+      // Update date elements
+      const month = now.toLocaleString('default', { month: 'short' });
+      const dateText = `${month}, ${now.getFullYear()}`;
+      document.getElementById('date').textContent = dateText;
+      document.getElementById('mobile-date').textContent = dateText;
+      document.getElementById('mobile-date-small').textContent = dateText;
+    }
+
+    // Call updateTime once and then every minute
+    updateTime();
+    setInterval(updateTime, 60000);
+
+    // Mobile menu toggle
+    document.getElementById('mobile-menu-button').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.add('active');
+    });
+
+    document.getElementById('close-menu').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.remove('active');
+    });
+
+    // --- Fox and Hounds Game Logic ---
+    const boardEl = document.getElementById('fox-hounds-board');
+    const messageEl = document.getElementById('fox-hounds-message');
+
+    const PIECES = {
+        hound: '🐶',
+        fox: '🦊'
+    };
+
+    let boardState;
+    let selectedCell = null;
+    let currentPlayer = 'hounds';
+
+    /**
+     * Initializes the game board and starts a new game.
+     */
+    function startFoxHoundsGame() {
+        // Clear any previous board state
+        boardState = [
+            [null, 'hound', null, 'hound', null, 'hound', null, 'hound'],
+            [null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null],
+            [null, null, null, null, 'fox', null, null, null]
+        ];
+
+        selectedCell = null;
+        currentPlayer = 'hounds';
+        messageEl.textContent = "Hounds' Turn";
+        renderBoard();
+    }
+
+    /**
+     * Renders the game board based on the current board state.
+     */
+    function renderBoard() {
+        boardEl.innerHTML = '';
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                const cell = document.createElement('div');
+                const isDarkSquare = (row + col) % 2 !== 0;
+                cell.classList.add('fox-hounds-cell', isDarkSquare ? 'cell-dark' : 'cell-light');
+                cell.dataset.row = row;
+                cell.dataset.col = col;
+
+                if (boardState[row][col]) {
+                    const piece = document.createElement('span');
+                    piece.textContent = PIECES[boardState[row][col]];
+                    piece.classList.add('fox-hounds-piece');
+                    cell.appendChild(piece);
+                }
+
+                cell.addEventListener('click', handleCellClick);
+                boardEl.appendChild(cell);
+            }
+        }
+    }
+
+    /**
+     * Handles a click event on a game cell.
+     * @param {Event} event The click event.
+     */
+    function handleCellClick(event) {
+        const cell = event.currentTarget;
+        const row = parseInt(cell.dataset.row);
+        const col = parseInt(cell.dataset.col);
+
+        // Check if a piece is currently selected
+        if (selectedCell) {
+            // A piece is selected, this click is a move attempt
+            const fromRow = selectedCell.row;
+            const fromCol = selectedCell.col;
+
+            // Check if the move is valid
+            if (isValidMove(fromRow, fromCol, row, col)) {
+                // Execute the move
+                boardState[row][col] = boardState[fromRow][fromCol];
+                boardState[fromRow][fromCol] = null;
+
+                // Clear highlights
+                clearHighlights();
+                selectedCell = null;
+
+                // Switch player and check for win
+                currentPlayer = (currentPlayer === 'hounds') ? 'fox' : 'hounds';
+                messageEl.textContent = `${currentPlayer === 'hounds' ? "Hounds'" : "Fox's"} Turn`;
+                renderBoard();
+                checkWinCondition();
+            } else {
+                // Invalid move, clear selection and highlights
+                clearHighlights();
+                selectedCell = null;
+                renderBoard(); // Re-render to clear any highlights
+            }
+        } else {
+            // No piece is selected, this is a selection attempt
+            const piece = boardState[row][col];
+            if (piece) {
+                const isCurrentPlayerPiece = (currentPlayer === 'hounds' && piece === 'hound') ||
+                                             (currentPlayer === 'fox' && piece === 'fox');
+
+                if (isCurrentPlayerPiece) {
+                    selectedCell = { row, col };
+                    cell.classList.add('selected');
+                    showValidMoves(row, col);
+                }
+            }
+        }
+    }
+
+    /**
+     * Determines if a move is valid based on game rules.
+     * @param {number} fromRow Starting row.
+     * @param {number} fromCol Starting column.
+     * @param {number} toRow Target row.
+     * @param {number} toCol Target column.
+     * @returns {boolean} True if the move is valid, otherwise false.
+     */
+    function isValidMove(fromRow, fromCol, toRow, toCol) {
+        // Check if the destination is a dark, empty square
+        if ((toRow + toCol) % 2 === 0 || boardState[toRow][toCol] !== null) {
+            return false;
+        }
+
+        const piece = boardState[fromRow][fromCol];
+        const rowDiff = toRow - fromRow;
+        const colDiff = Math.abs(toCol - fromCol);
+
+        if (piece === 'hound') {
+            // Hounds must move diagonally forward only
+            return rowDiff === 1 && colDiff === 1;
+        } else if (piece === 'fox') {
+            // Fox can move diagonally forward or backward
+            return Math.abs(rowDiff) === 1 && colDiff === 1;
+        }
+
+        return false;
+    }
+
+    /**
+     * Highlights all valid moves for the selected piece.
+     * @param {number} row The row of the selected piece.
+     * @param {number} col The column of the selected piece.
+     */
+    function showValidMoves(row, col) {
+        for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+                if (isValidMove(row, col, r, c)) {
+                    const cell = boardEl.querySelector(`[data-row='${r}'][data-col='${c}']`);
+                    if (cell) {
+                        cell.classList.add('highlight');
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Removes all highlight classes from the board.
+     */
+    function clearHighlights() {
+        document.querySelectorAll('.highlight, .selected').forEach(cell => {
+            cell.classList.remove('highlight', 'selected');
+        });
+    }
+
+    /**
+     * Checks for a win condition (either Fox wins or Hounds win).
+     */
+    function checkWinCondition() {
+        const foxPos = findFoxPosition();
+
+        if (foxPos.row === 0) {
+            // Fox has reached the home row (row 0)
+            messageEl.textContent = "🦊 The Fox wins!";
+            boardEl.removeEventListener('click', handleCellClick);
+        } else if (!hasValidFoxMoves(foxPos.row, foxPos.col)) {
+            // Fox has no valid moves
+            messageEl.textContent = "🐶 The Hounds win!";
+            boardEl.removeEventListener('click', handleCellClick);
+        }
+    }
+
+    /**
+     * Finds the current position of the Fox on the board.
+     * @returns {Object} An object with the row and column of the Fox.
+     */
+    function findFoxPosition() {
+        for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+                if (boardState[r][c] === 'fox') {
+                    return { row: r, col: c };
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks if the Fox has any valid moves.
+     * @param {number} row The row of the Fox.
+     * @param {number} col The column of the Fox.
+     * @returns {boolean} True if the Fox can move, otherwise false.
+     */
+    function hasValidFoxMoves(row, col) {
+        // Define all possible diagonal moves
+        const possibleMoves = [
+            { r: row - 1, c: col - 1 },
+            { r: row - 1, c: col + 1 },
+            { r: row + 1, c: col - 1 },
+            { r: row + 1, c: col + 1 }
+        ];
+
+        // Check each possible move
+        for (const move of possibleMoves) {
+            const { r, c } = move;
+            // Ensure the move is within board bounds and is on a dark, empty square
+            if (r >= 0 && r < 8 && c >= 0 && c < 8 && (r + c) % 2 !== 0 && boardState[r][c] === null) {
+                return true; // Found a valid move
+            }
+        }
+        return false; // No valid moves found
+    }
+
+    // Initialize the game when the page loads
+    window.onload = startFoxHoundsGame;
+</script>
+</body>
+</html>

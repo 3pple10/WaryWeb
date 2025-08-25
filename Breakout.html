@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WaryWEB - Breakout</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #0a0a0a;
+        background-image: radial-gradient(circle at top right, rgba(255, 165, 0, 0.15), transparent 40%),
+                          radial-gradient(circle at bottom left, rgba(0, 200, 255, 0.15), transparent 50%);
+    }
+
+    .card-glass {
+      background: rgba(23, 23, 23, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-link {
+      position: relative;
+    }
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      width: 0%;
+      height: 2px;
+      left: 0;
+      bottom: -3px;
+      background: #fff;
+      transition: 0.3s;
+    }
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    /* Mobile menu styles */
+    .mobile-menu {
+      transform: translateX(100%);
+      transition: transform 0.3s ease-in-out;
+    }
+    .mobile-menu.active {
+      transform: translateX(0);
+    }
+
+    /* Prevent horizontal scrolling */
+    html, body {
+        overflow-x: hidden;
+    }
+
+    /* Breakout specific styling */
+    #breakout-game-canvas {
+        background-color: #1f2937;
+        border: 4px solid #4b5563;
+        cursor: none;
+        touch-action: none;
+    }
+
+    .game-message-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    #game-title {
+        font-family: 'Press Start 2P', cursive;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 640px) {
+        #breakout-game-canvas {
+            width: 100%;
+            max-width: 300px;
+            height: 450px;
+        }
+    }
+  </style>
+</head>
+<body class="text-white">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full bg-black/80 backdrop-blur-md border-b border-gray-800 z-50">
+  <div class="max-w-6xl mx-auto flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+    <a href="index.html" class="text-xl sm:text-2xl font-black">WaryWEB</a>
+
+    <nav class="hidden md:flex gap-6 lg:gap-8 text-gray-300">
+      <a href="#" class="nav-link hover:text-white">Games</a>
+      <a href="#" class="nav-link hover:text-white">Utilities</a>
+      <a href="#" class="nav-link hover:text-white">About</a>
+    </nav>
+
+    <button id="mobile-menu-button" class="md:hidden p-2">
+      <i data-lucide="menu" class="w-6 h-6"></i>
+    </button>
+
+    <div class="hidden sm:flex card-glass items-center gap-4 px-4 py-2 rounded-lg">
+      <div id="clock" class="text-lg font-bold">10:59</div>
+      <div class="border-l border-gray-600 h-6"></div>
+      <div id="date" class="text-sm text-gray-300">Dec, 2025</div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-black/95 backdrop-blur-lg z-50 p-6 md:hidden">
+    <div class="flex justify-between items-center mb-10">
+      <h2 class="text-xl font-bold">Menu</h2>
+      <button id="close-menu" class="p-2">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+    <nav class="flex flex-col gap-6 text-lg">
+      <a href="#" class="nav-link hover:text-white py-2">Games</a>
+      <a href="#" class="nav-link hover:text-white py-2">Utilities</a>
+      <a href="#" class="nav-link hover:text-white py-2">About</a>
+    </nav>
+    <div class="mt-10 pt-6 border-t border-gray-700">
+      <div class="flex items-center gap-3">
+        <i data-lucide="clock" class="w-5 h-5"></i>
+        <div id="mobile-clock" class="font-medium">10:59</div>
+      </div>
+      <div class="flex items-center gap-3 mt-2">
+        <i data-lucide="calendar" class="w-5 h-5"></i>
+        <div id="mobile-date" class="text-gray-300">Dec, 2025</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Small Mobile Time/Date -->
+<div class="sm:hidden fixed top-16 right-4 z-40">
+  <div class="card-glass px-3 py-1 rounded-lg text-sm flex items-center gap-2">
+    <span id="mobile-time-small" class="font-medium">10:59</span>
+    <span class="text-gray-300">•</span>
+    <span id="mobile-date-small">Dec, 2025</span>
+  </div>
+</div>
+
+<!-- Breakout Game Section -->
+<section id="breakout-game-section" class="py-24 px-6 min-h-screen flex flex-col items-center justify-center">
+  <div class="max-w-6xl w-full mx-auto text-center mb-8">
+    <h3 id="game-title" class="text-4xl font-bold">Breakout</h3>
+    <p class="text-gray-400 mt-2">Use your mouse or touch to move the paddle and destroy the bricks!</p>
+  </div>
+
+  <div class="max-w-5xl w-full mx-auto p-6 md:p-12 card-glass rounded-2xl relative">
+    <canvas id="breakout-game-canvas" class="rounded-xl"></canvas>
+    <div class="flex flex-col sm:flex-row items-center justify-between w-full mt-4 text-sm md:text-base">
+      <div class="flex items-center gap-2">
+        <p>Score: <span id="score">0</span></p>
+        <div class="border-l border-gray-600 h-4 mx-2"></div>
+        <p>Lives: <span id="lives">3</span></p>
+      </div>
+      <button id="start-button" class="px-6 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold mt-4 sm:mt-0">Start Game</button>
+    </div>
+    <!-- Game Over / You Win Overlay -->
+    <div id="game-message-overlay" class="game-message-overlay hidden rounded-xl">
+      <h2 id="game-message-text" class="text-5xl font-bold mb-4">Game Over</h2>
+      <button id="play-again-button" class="px-6 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold">Play Again</button>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="py-6 sm:py-8 border-t border-gray-800 text-center text-gray-400 text-sm sm:text-base">
+  <p>&copy; 2025 WaryWEB. All Rights Reserved.</p>
+</footer>
+
+<script>
+  // --- Global Clock + Date ---
+  function updateTime() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('clock').textContent = `${hours}:${minutes}`;
+    document.getElementById('mobile-clock').textContent = `${hours}:${minutes}`;
+    document.getElementById('mobile-time-small').textContent = `${hours}:${minutes}`;
+    const month = now.toLocaleString('default', { month: 'short' });
+    const dateText = `${month}, ${now.getFullYear()}`;
+    document.getElementById('date').textContent = dateText;
+    document.getElementById('mobile-date').textContent = dateText;
+    document.getElementById('mobile-date-small').textContent = dateText;
+  }
+  updateTime();
+  setInterval(updateTime, 60000);
+
+  // Mobile menu toggle
+  document.getElementById('mobile-menu-button').addEventListener('click', () => {
+    document.getElementById('mobile-menu').classList.add('active');
+  });
+  document.getElementById('close-menu').addEventListener('click', () => {
+    document.getElementById('mobile-menu').classList.remove('active');
+  });
+
+  // --- Breakout Game Logic ---
+  const canvas = document.getElementById('breakout-game-canvas');
+  const ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score');
+  const livesEl = document.getElementById('lives');
+  const startButton = document.getElementById('start-button');
+  const playAgainButton = document.getElementById('play-again-button');
+  const gameMessageOverlay = document.getElementById('game-message-overlay');
+  const gameMessageText = document.getElementById('game-message-text');
+
+  // Game state variables
+  let gameLoop;
+  let gameOver = false;
+  let gameStarted = false;
+
+  // Set canvas size
+  const canvasWidth = 480;
+  const canvasHeight = 600;
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+
+  // Ball properties
+  let ball = {
+      x: canvasWidth / 2,
+      y: canvasHeight - 30,
+      radius: 10,
+      dx: 4,
+      dy: -4
+  };
+
+  // Paddle properties
+  let paddle = {
+      height: 10,
+      width: 75,
+      x: (canvasWidth - 75) / 2
+  };
+
+  // Brick properties
+  let brick = {
+      rows: 5,
+      cols: 8,
+      width: 50,
+      height: 15,
+      padding: 10,
+      offsetTop: 30,
+      offsetLeft: 30
+  };
+
+  let bricks = [];
+  let score = 0;
+  let lives = 3;
+
+  /**
+   * Creates the brick grid.
+   */
+  function createBricks() {
+      bricks = [];
+      for (let r = 0; r < brick.rows; r++) {
+          bricks[r] = [];
+          for (let c = 0; c < brick.cols; c++) {
+              bricks[r][c] = { x: 0, y: 0, status: 1 };
+          }
+      }
+  }
+
+  /**
+   * Draws the ball on the canvas.
+   */
+  function drawBall() {
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#f3f4f6';
+      ctx.fill();
+      ctx.closePath();
+  }
+
+  /**
+   * Draws the paddle on the canvas.
+   */
+  function drawPaddle() {
+      ctx.beginPath();
+      ctx.rect(paddle.x, canvasHeight - paddle.height, paddle.width, paddle.height);
+      ctx.fillStyle = '#94a3b8';
+      ctx.fill();
+      ctx.closePath();
+  }
+
+  /**
+   * Draws the bricks on the canvas.
+   */
+  function drawBricks() {
+      for (let r = 0; r < brick.rows; r++) {
+          for (let c = 0; c < brick.cols; c++) {
+              if (bricks[r][c].status === 1) {
+                  const brickX = (c * (brick.width + brick.padding)) + brick.offsetLeft;
+                  const brickY = (r * (brick.height + brick.padding)) + brick.offsetTop;
+                  bricks[r][c].x = brickX;
+                  bricks[r][c].y = brickY;
+                  ctx.beginPath();
+                  ctx.rect(brickX, brickY, brick.width, brick.height);
+                  ctx.fillStyle = getColorForBrick(r);
+                  ctx.fill();
+                  ctx.closePath();
+              }
+          }
+      }
+  }
+
+  /**
+   * Gets a color for a brick based on its row.
+   * @param {number} row The brick row.
+   * @returns {string} The color hex code.
+   */
+  function getColorForBrick(row) {
+      const colors = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a855f7'];
+      return colors[row % colors.length];
+  }
+
+  /**
+   * Handles collision detection between the ball and bricks.
+   */
+  function collisionDetection() {
+      for (let r = 0; r < brick.rows; r++) {
+          for (let c = 0; c < brick.cols; c++) {
+              const b = bricks[r][c];
+              if (b.status === 1) {
+                  if (ball.x > b.x && ball.x < b.x + brick.width && ball.y > b.y && ball.y < b.y + brick.height) {
+                      ball.dy = -ball.dy;
+                      b.status = 0;
+                      score++;
+                      scoreEl.textContent = score;
+
+                      if (score === brick.rows * brick.cols) {
+                          endGame("You Win!");
+                      }
+                  }
+              }
+          }
+      }
+  }
+
+  /**
+   * Moves the paddle based on mouse or touch input.
+   * @param {Event} e The event object.
+   */
+  function mouseMoveHandler(e) {
+      let relativeX;
+      if (e.clientX) {
+          relativeX = e.clientX - canvas.offsetLeft;
+      } else if (e.touches && e.touches[0]) {
+          relativeX = e.touches[0].clientX - canvas.offsetLeft;
+      }
+
+      if (relativeX > 0 && relativeX < canvasWidth) {
+          paddle.x = relativeX - paddle.width / 2;
+      }
+  }
+
+  /**
+   * Resets the ball and paddle position after a life is lost.
+   */
+  function resetBallAndPaddle() {
+      ball.x = canvasWidth / 2;
+      ball.y = canvasHeight - 30;
+      ball.dx = 4;
+      ball.dy = -4;
+      paddle.x = (canvasWidth - paddle.width) / 2;
+  }
+
+  /**
+   * Main game loop. Draws and updates game state.
+   */
+  function draw() {
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      drawBricks();
+      drawBall();
+      drawPaddle();
+
+      collisionDetection();
+
+      // Ball movement
+      ball.x += ball.dx;
+      ball.y += ball.dy;
+
+      // Wall collision
+      if (ball.x + ball.dx > canvasWidth - ball.radius || ball.x + ball.dx < ball.radius) {
+          ball.dx = -ball.dx;
+      }
+      if (ball.y + ball.dy < ball.radius) {
+          ball.dy = -ball.dy;
+      } else if (ball.y + ball.dy > canvasHeight - ball.radius) {
+          // Paddle collision
+          if (ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
+              ball.dy = -ball.dy;
+          } else {
+              lives--;
+              livesEl.textContent = lives;
+              if (lives === 0) {
+                  endGame("Game Over");
+              } else {
+                  resetBallAndPaddle();
+              }
+          }
+      }
+
+      if (!gameOver) {
+          gameLoop = requestAnimationFrame(draw);
+      }
+  }
+
+  /**
+   * Starts the game.
+   */
+  function startGame() {
+      if (!gameStarted) {
+          gameStarted = true;
+          gameOver = false;
+          score = 0;
+          lives = 3;
+          scoreEl.textContent = score;
+          livesEl.textContent = lives;
+          gameMessageOverlay.classList.add('hidden');
+          createBricks();
+          resetBallAndPaddle();
+          gameLoop = requestAnimationFrame(draw);
+      }
+  }
+
+  /**
+   * Ends the game and shows a message.
+   * @param {string} message The game result message.
+   */
+  function endGame(message) {
+      gameOver = true;
+      gameStarted = false;
+      cancelAnimationFrame(gameLoop);
+      gameMessageText.textContent = message;
+      gameMessageOverlay.classList.remove('hidden');
+  }
+
+  // Event listeners
+  document.addEventListener('mousemove', mouseMoveHandler, false);
+  document.addEventListener('touchmove', mouseMoveHandler, false);
+  startButton.addEventListener('click', startGame);
+  playAgainButton.addEventListener('click', startGame);
+
+  // Initial setup
+  window.onload = function() {
+      startGame();
+      endGame("Press Start to Play!");
+  };
+</script>
+</body>
+</html>

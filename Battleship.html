@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WaryWEB - Battleship</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #0a0a0a;
+        background-image: radial-gradient(circle at top right, rgba(255, 165, 0, 0.15), transparent 40%),
+                          radial-gradient(circle at bottom left, rgba(0, 200, 255, 0.15), transparent 50%);
+    }
+
+    .card-glass {
+      background: rgba(23, 23, 23, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-link {
+      position: relative;
+    }
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      width: 0%;
+      height: 2px;
+      left: 0;
+      bottom: -3px;
+      background: #fff;
+      transition: 0.3s;
+    }
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    /* Mobile menu styles */
+    .mobile-menu {
+      transform: translateX(100%);
+      transition: transform 0.3s ease-in-out;
+    }
+    .mobile-menu.active {
+      transform: translateX(0);
+    }
+
+    /* Prevent horizontal scrolling */
+    html, body {
+        overflow-x: hidden;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        grid-template-rows: repeat(10, 1fr);
+        gap: 2px;
+        aspect-ratio: 1 / 1;
+        width: 100%;
+    }
+
+    .grid-cell {
+        background-color: #0b4e85;
+        transition: background-color 0.2s;
+        position: relative;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    .grid-cell.player-board-cell {
+        cursor: default;
+    }
+    .grid-cell.ship {
+        background-color: #6b7280;
+    }
+    .grid-cell.hit {
+        background-color: #ef4444; /* Red for hit */
+    }
+    .grid-cell.miss {
+        background-color: #4b5563; /* Grey for miss */
+    }
+
+    /* Add a dot for misses to make them more distinct */
+    .grid-cell.miss:after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 10px;
+        height: 10px;
+        background: #9ca3af;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    /* Add an X for hits */
+    .grid-cell.hit:after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 80%;
+        height: 80%;
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23f9fafb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        transform: translate(-50%, -50%);
+    }
+
+    @media (min-width: 640px) {
+        .grid-container-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+    }
+  </style>
+</head>
+<body class="text-white">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full bg-black/80 backdrop-blur-md border-b border-gray-800 z-50">
+  <div class="max-w-6xl mx-auto flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+    <a href="index.html" class="text-xl sm:text-2xl font-black">WaryWEB</a>
+
+    <nav class="hidden md:flex gap-6 lg:gap-8 text-gray-300">
+      <a href="#" class="nav-link hover:text-white">Games</a>
+      <a href="#" class="nav-link hover:text-white">Utilities</a>
+      <a href="#" class="nav-link hover:text-white">About</a>
+    </nav>
+
+    <button id="mobile-menu-button" class="md:hidden p-2">
+      <i data-lucide="menu" class="w-6 h-6"></i>
+    </button>
+
+    <div class="hidden sm:flex card-glass items-center gap-4 px-4 py-2 rounded-lg">
+      <div id="clock" class="text-lg font-bold">10:59</div>
+      <div class="border-l border-gray-600 h-6"></div>
+      <div id="date" class="text-sm text-gray-300">Dec, 2025</div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-black/95 backdrop-blur-lg z-50 p-6 md:hidden">
+    <div class="flex justify-between items-center mb-10">
+      <h2 class="text-xl font-bold">Menu</h2>
+      <button id="close-menu" class="p-2">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+    <nav class="flex flex-col gap-6 text-lg">
+      <a href="#" class="nav-link hover:text-white py-2">Games</a>
+      <a href="#" class="nav-link hover:text-white py-2">Utilities</a>
+      <a href="#" class="nav-link hover:text-white py-2">About</a>
+    </nav>
+    <div class="mt-10 pt-6 border-t border-gray-700">
+      <div class="flex items-center gap-3">
+        <i data-lucide="clock" class="w-5 h-5"></i>
+        <div id="mobile-clock" class="font-medium">10:59</div>
+      </div>
+      <div class="flex items-center gap-3 mt-2">
+        <i data-lucide="calendar" class="w-5 h-5"></i>
+        <div id="mobile-date" class="text-gray-300">Dec, 2025</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Small Mobile Time/Date -->
+<div class="sm:hidden fixed top-16 right-4 z-40">
+  <div class="card-glass px-3 py-1 rounded-lg text-sm flex items-center gap-2">
+    <span id="mobile-time-small" class="font-medium">10:59</span>
+    <span class="text-gray-300">•</span>
+    <span id="mobile-date-small">Dec, 2025</span>
+  </div>
+</div>
+
+<!-- Battleship Game Section -->
+<section id="battleship-game-section" class="py-24 px-6 min-h-screen flex flex-col items-center justify-center">
+  <div class="max-w-6xl w-full mx-auto text-center mb-8">
+    <h3 id="game-title" class="text-4xl sm:text-5xl font-extrabold tracking-tight">Battleship</h3>
+    <p id="game-message" class="text-lg sm:text-xl text-gray-400 mt-2">Find and sink the enemy fleet!</p>
+  </div>
+
+  <div class="max-w-5xl w-full mx-auto p-6 md:p-12 card-glass rounded-2xl">
+    <!-- Changed order to show player's fleet first for all screen sizes -->
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+      <h4 class="text-lg font-bold mb-2 sm:mb-0">Your Fleet</h4>
+      <h4 class="text-lg font-bold">Enemy Grid</h4>
+    </div>
+    <!-- Added gap-y-12 class for increased spacing on mobile -->
+    <div class="grid-container-wrapper flex flex-col gap-y-12 sm:grid sm:gap-y-0">
+      <div id="player-grid" class="grid-container rounded-xl overflow-hidden border-2 border-gray-600"></div>
+      <div id="opponent-grid" class="grid-container rounded-xl overflow-hidden border-2 border-gray-600"></div>
+    </div>
+    <div class="flex items-center justify-between mt-6 text-sm sm:text-base">
+      <p>Your Ships Remaining: <span id="player-ships-left">5</span></p>
+      <p>Enemy Ships Remaining: <span id="opponent-ships-left">5</span></p>
+    </div>
+    <div class="flex justify-center mt-6">
+      <button id="reset-button" class="px-6 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold">Play Again</button>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="py-6 sm:py-8 border-t border-gray-800 text-center text-gray-400 text-sm sm:text-base">
+  <p>&copy; 2025 WaryWEB. All Rights Reserved.</p>
+</footer>
+
+<script>
+  // --- Global Clock + Date ---
+  function updateTime() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('clock').textContent = `${hours}:${minutes}`;
+    document.getElementById('mobile-clock').textContent = `${hours}:${minutes}`;
+    document.getElementById('mobile-time-small').textContent = `${hours}:${minutes}`;
+    const month = now.toLocaleString('default', { month: 'short' });
+    const dateText = `${month}, ${now.getFullYear()}`;
+    document.getElementById('date').textContent = dateText;
+    document.getElementById('mobile-date').textContent = dateText;
+    document.getElementById('mobile-date-small').textContent = dateText;
+  }
+  updateTime();
+  setInterval(updateTime, 60000);
+
+  // Mobile menu toggle
+  document.getElementById('mobile-menu-button').addEventListener('click', () => {
+    document.getElementById('mobile-menu').classList.add('active');
+  });
+  document.getElementById('close-menu').addEventListener('click', () => {
+    document.getElementById('mobile-menu').classList.remove('active');
+  });
+
+  // --- Battleship Game Logic ---
+  const boardSize = 10;
+  const playerGridEl = document.getElementById('player-grid');
+  const opponentGridEl = document.getElementById('opponent-grid');
+  const messageEl = document.getElementById('game-message');
+  const playerShipsLeftEl = document.getElementById('player-ships-left');
+  const opponentShipsLeftEl = document.getElementById('opponent-ships-left');
+  const resetButton = document.getElementById('reset-button');
+
+  let playerBoard = [];
+  let opponentBoard = [];
+  let playerShips = [5, 4, 3, 3, 2]; // Carrier, Battleship, Cruiser, Submarine, Destroyer
+  let opponentShips = [5, 4, 3, 3, 2];
+  let playerHits = 0;
+  let opponentHits = 0;
+  let playerTurn = true;
+  let gameActive = false;
+
+  /**
+   * Initializes a new, empty board grid.
+   * @returns {Array<Array<string>>} The initialized board.
+   */
+  function createEmptyBoard() {
+      return Array.from({ length: boardSize }, () => Array(boardSize).fill('empty'));
+  }
+
+  /**
+   * Places ships randomly on a board.
+   * @param {Array<Array<string>>} board The board to place ships on.
+   * @param {Array<number>} ships The array of ship lengths.
+   */
+  function placeShips(board, ships) {
+      for (const length of ships) {
+          let placed = false;
+          while (!placed) {
+              const isVertical = Math.random() < 0.5;
+              const row = Math.floor(Math.random() * (boardSize - (isVertical ? length : 0)));
+              const col = Math.floor(Math.random() * (boardSize - (isVertical ? 0 : length)));
+
+              // Check if placement is valid
+              let isValid = true;
+              for (let i = 0; i < length; i++) {
+                  const checkRow = row + (isVertical ? i : 0);
+                  const checkCol = col + (isVertical ? 0 : i);
+                  if (board[checkRow][checkCol] !== 'empty') {
+                      isValid = false;
+                      break;
+                  }
+              }
+
+              if (isValid) {
+                  for (let i = 0; i < length; i++) {
+                      const placeRow = row + (isVertical ? i : 0);
+                      const placeCol = col + (isVertical ? 0 : i);
+                      board[placeRow][placeCol] = 'ship';
+                  }
+                  placed = true;
+              }
+          }
+      }
+  }
+
+  /**
+   * Renders the game boards in the UI.
+   */
+  function renderBoards() {
+      renderGrid(playerGridEl, playerBoard, true);
+      renderGrid(opponentGridEl, opponentBoard, false);
+      updateShipCounts();
+  }
+
+  /**
+   * Helper function to render a single grid.
+   * @param {HTMLElement} gridEl The grid element to render to.
+   * @param {Array<Array<string>>} board The board data.
+   * @param {boolean} isPlayerGrid True if this is the player's grid.
+   */
+  function renderGrid(gridEl, board, isPlayerGrid) {
+      gridEl.innerHTML = '';
+      for (let r = 0; r < boardSize; r++) {
+          for (let c = 0; c < boardSize; c++) {
+              const cell = document.createElement('div');
+              cell.className = `grid-cell rounded-md`;
+
+              if (isPlayerGrid) {
+                  cell.classList.add('player-board-cell');
+                  if (board[r][c] === 'ship') {
+                      cell.classList.add('ship');
+                  } else if (board[r][c] === 'hit') {
+                      cell.classList.add('ship', 'hit');
+                  } else if (board[r][c] === 'miss') {
+                      cell.classList.add('miss');
+                  }
+              } else {
+                  if (board[r][c] === 'hit') {
+                      cell.classList.add('hit');
+                  } else if (board[r][c] === 'miss') {
+                      cell.classList.add('miss');
+                  }
+                  // Attach event listener only to opponent's grid
+                  cell.addEventListener('click', () => handlePlayerShot(r, c));
+              }
+              gridEl.appendChild(cell);
+          }
+      }
+  }
+
+  /**
+   * Updates the UI with the number of ships remaining.
+   */
+  function updateShipCounts() {
+      const remainingPlayerShips = playerShips.filter(s => s > 0).length;
+      const remainingOpponentShips = opponentShips.filter(s => s > 0).length;
+      playerShipsLeftEl.textContent = remainingPlayerShips;
+      opponentShipsLeftEl.textContent = remainingOpponentShips;
+  }
+
+  /**
+   * Handles a shot on a board and checks for hits/misses.
+   * @param {Array<Array<string>>} board The target board.
+   * @param {Array<number>} ships The array of ship lengths.
+   * @param {number} r The row index.
+   * @param {number} c The column index.
+   * @returns {boolean} True if it was a hit, false otherwise.
+   */
+  function takeShot(board, r, c) {
+      if (board[r][c] === 'ship') {
+          board[r][c] = 'hit';
+          return true;
+      } else if (board[r][c] === 'empty') {
+          board[r][c] = 'miss';
+      }
+      return false;
+  }
+
+  /**
+   * Handles the player's turn when they click on the opponent's grid.
+   * @param {number} r The row index.
+   * @param {number} c The column index.
+   */
+  function handlePlayerShot(r, c) {
+      if (!gameActive || !playerTurn || opponentBoard[r][c] === 'hit' || opponentBoard[r][c] === 'miss') {
+          return; // Invalid move
+      }
+
+      const isHit = takeShot(opponentBoard, r, c);
+      if (isHit) {
+          messageEl.textContent = "You hit an enemy ship!";
+          opponentHits++;
+          // Check if any ships are sunk
+          checkIfSunk(opponentBoard, opponentShips);
+          if (opponentHits >= opponentShips.reduce((acc, val) => acc + val, 0)) {
+              endGame(true);
+          }
+      } else {
+          messageEl.textContent = "You missed!";
+      }
+
+      renderBoards();
+      playerTurn = false;
+      if (gameActive) {
+          setTimeout(handleOpponentTurn, 1000);
+      }
+  }
+
+  /**
+   * Checks if a ship has been completely sunk.
+   * @param {Array<Array<string>>} board The board data.
+   * @param {Array<number>} ships The array of ship lengths.
+   */
+  function checkIfSunk(board, ships) {
+      // This is a simple implementation. A more advanced version would check each ship's cells.
+      // For now, we'll just check if all the hits equal the total ship lengths.
+      const totalShipLength = ships.reduce((acc, val) => acc + val, 0);
+      const totalHits = board.flat().filter(cell => cell === 'hit').length;
+
+      if (totalHits >= totalShipLength) {
+          // A ship was sunk. For a simple AI, we can just assume a ship was sunk when a hit count is reached
+          // but for now, we'll just update the general "ships left" count.
+          ships[0] = 0; // "Sinks" the first ship for a simple counter update
+      }
+  }
+
+  /**
+   * Handles the computer opponent's turn.
+   */
+  function handleOpponentTurn() {
+      messageEl.textContent = "Enemy's turn...";
+      let shotTaken = false;
+      while (!shotTaken) {
+          const r = Math.floor(Math.random() * boardSize);
+          const c = Math.floor(Math.random() * boardSize);
+
+          if (playerBoard[r][c] !== 'hit' && playerBoard[r][c] !== 'miss') {
+              const isHit = takeShot(playerBoard, r, c);
+              if (isHit) {
+                  messageEl.textContent = "Enemy hit your ship!";
+                  playerHits++;
+              } else {
+                  messageEl.textContent = "Enemy missed!";
+              }
+              shotTaken = true;
+          }
+      }
+
+      renderBoards();
+      playerTurn = true;
+      if (playerHits >= playerShips.reduce((acc, val) => acc + val, 0)) {
+          endGame(false);
+      } else {
+          messageEl.textContent = "Your turn. Click on the enemy grid to fire!";
+      }
+  }
+
+  /**
+   * Ends the game and displays the result.
+   * @param {boolean} playerWon True if the player won, false otherwise.
+   */
+  function endGame(playerWon) {
+      gameActive = false;
+      messageEl.textContent = playerWon ? "Congratulations! You sunk the entire enemy fleet and won the game!" : "Game Over! Your fleet has been sunk.";
+      resetButton.classList.remove('hidden');
+  }
+
+  /**
+   * Starts or resets the game.
+   */
+  function startGame() {
+      playerBoard = createEmptyBoard();
+      opponentBoard = createEmptyBoard();
+      playerShips = [5, 4, 3, 3, 2];
+      opponentShips = [5, 4, 3, 3, 2];
+      playerHits = 0;
+      opponentHits = 0;
+      playerTurn = true;
+      gameActive = true;
+
+      placeShips(playerBoard, playerShips);
+      placeShips(opponentBoard, opponentShips);
+
+      renderBoards();
+      messageEl.textContent = "Your turn. Click on the enemy grid to fire!";
+      resetButton.classList.add('hidden');
+  }
+
+  resetButton.addEventListener('click', startGame);
+
+  window.onload = startGame;
+</script>
+</body>
+</html>

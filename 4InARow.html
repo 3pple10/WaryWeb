@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WaryWEB - Connect Four</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #0a0a0a;
+        background-image: radial-gradient(circle at top right, rgba(255, 165, 0, 0.15), transparent 40%),
+                          radial-gradient(circle at bottom left, rgba(0, 200, 255, 0.15), transparent 50%);
+    }
+
+    .card-glass {
+      background: rgba(23, 23, 23, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-link {
+      position: relative;
+    }
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      width: 0%;
+      height: 2px;
+      left: 0;
+      bottom: -3px;
+      background: #fff;
+      transition: 0.3s;
+    }
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    /* Mobile menu styles */
+    .mobile-menu {
+      transform: translateX(100%);
+      transition: transform 0.3s ease-in-out;
+    }
+    .mobile-menu.active {
+      transform: translateX(0);
+    }
+
+    /* Prevent horizontal scrolling */
+    html, body {
+        overflow-x: hidden;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        grid-template-rows: repeat(6, 1fr);
+        gap: 4px;
+        aspect-ratio: 7 / 6;
+        width: 100%;
+        max-width: 600px;
+        background-color: #1e40af; /* A strong blue for the game board */
+        padding: 8px;
+        border-radius: 12px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .grid-cell {
+        position: relative;
+        background-color: #0a0a0a; /* The "hole" for the disc */
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.2s ease-in-out;
+        border: 2px solid #1e40af; /* To create separation */
+        overflow: hidden;
+    }
+
+    .grid-cell:hover:not(.occupied):not(.disabled) {
+        transform: scale(1.05);
+    }
+
+    .disc {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        transform: translateY(-100vh); /* Start off-screen */
+        animation: dropDisc 0.5s ease-out forwards;
+    }
+
+    .disc.red {
+        background-color: #dc2626;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+    .disc.yellow {
+        background-color: #eab308;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    @keyframes dropDisc {
+        0% { transform: translateY(-100vh); }
+        100% { transform: translateY(0); }
+    }
+
+    .ai-move-highlight {
+        animation: pulse-border 1.5s infinite;
+    }
+
+    @keyframes pulse-border {
+        0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+    }
+
+    .occupied {
+        cursor: not-allowed;
+    }
+
+    /* Game Over Overlay Styles */
+    #game-over-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    #game-over-overlay.visible {
+        opacity: 1;
+        visibility: visible;
+    }
+  </style>
+</head>
+<body class="text-white">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full bg-black/80 backdrop-blur-md border-b border-gray-800 z-50">
+  <div class="max-w-6xl mx-auto flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+    <a href="index.html" class="text-xl sm:text-2xl font-black">WaryWEB</a>
+    <nav class="hidden md:flex gap-6 lg:gap-8 text-gray-300">
+      <a href="#" class="nav-link hover:text-white">Games</a>
+      <a href="#" class="nav-link hover:text-white">Utilities</a>
+      <a href="#" class="nav-link hover:text-white">About</a>
+    </nav>
+    <button id="mobile-menu-button" class="md:hidden p-2">
+      <i data-lucide="menu" class="w-6 h-6"></i>
+    </button>
+    <div class="hidden sm:flex card-glass items-center gap-4 px-4 py-2 rounded-lg">
+      <div id="clock" class="text-lg font-bold">10:59</div>
+      <div class="border-l border-gray-600 h-6"></div>
+      <div id="date" class="text-sm text-gray-300">Dec, 2025</div>
+    </div>
+  </div>
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-black/95 backdrop-blur-lg z-50 p-6 md:hidden">
+    <div class="flex justify-between items-center mb-10">
+      <h2 class="text-xl font-bold">Menu</h2>
+      <button id="close-menu" class="p-2">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+    <nav class="flex flex-col gap-6 text-lg">
+      <a href="#" class="nav-link hover:text-white py-2">Games</a>
+      <a href="#" class="nav-link hover:text-white py-2">Utilities</a>
+      <a href="#" class="nav-link hover:text-white py-2">About</a>
+    </nav>
+    <div class="mt-10 pt-6 border-t border-gray-700">
+      <div class="flex items-center gap-3">
+        <i data-lucide="clock" class="w-5 h-5"></i>
+        <div id="mobile-clock" class="font-medium">10:59</div>
+      </div>
+      <div class="flex items-center gap-3 mt-2">
+        <i data-lucide="calendar" class="w-5 h-5"></i>
+        <div id="mobile-date" class="text-gray-300">Dec, 2025</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Small Mobile Time/Date -->
+<div class="sm:hidden fixed top-16 right-4 z-40">
+  <div class="card-glass px-3 py-1 rounded-lg text-sm flex items-center gap-2">
+    <span id="mobile-time-small" class="font-medium">10:59</span>
+    <span class="text-gray-300">•</span>
+    <span id="mobile-date-small">Dec, 2025</span>
+  </div>
+</div>
+
+<!-- Connect Four Game Section -->
+<section id="connect-four-section" class="py-24 px-6 min-h-screen flex flex-col items-center justify-center">
+  <div class="max-w-6xl w-full mx-auto text-center mb-8">
+    <h3 id="game-title" class="text-4xl sm:text-5xl font-extrabold tracking-tight">Connect Four</h3>
+    <p id="game-message" class="text-lg sm:text-xl text-gray-400 mt-2">Player 1 (Red) starts. Drop a disc to connect four!</p>
+  </div>
+
+  <div class="max-w-5xl w-full mx-auto p-6 md:p-12 card-glass rounded-2xl flex flex-col items-center">
+    <div class="flex justify-between items-center w-full max-w-[600px] mb-6">
+      <div class="flex items-center gap-2">
+        <div class="disc red w-6 h-6"></div>
+        <p class="text-xl font-bold">Player 1: <span id="p1-wins">0</span></p>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="disc yellow w-6 h-6"></div>
+        <p class="text-xl font-bold">Player 2: <span id="p2-wins">0</span></p>
+      </div>
+    </div>
+
+    <div id="game-board" class="grid-container"></div>
+
+    <div class="flex flex-col sm:flex-row items-center gap-4 mt-6">
+      <p class="text-sm">Game Mode:</p>
+      <div class="flex items-center gap-4">
+        <button id="pvp-mode" class="px-4 py-2 rounded-xl bg-red-700 text-white font-semibold transition-colors duration-200">Player vs Player</button>
+        <button id="ai-mode" class="px-4 py-2 rounded-xl bg-yellow-600 hover:bg-yellow-700 text-white font-semibold transition-colors duration-200">Player vs AI</button>
+      </div>
+    </div>
+
+    <div id="difficulty-options" class="flex flex-col sm:flex-row items-center gap-4 mt-4 hidden">
+      <p class="text-sm">AI Difficulty:</p>
+      <div class="flex items-center gap-4">
+        <button id="easy-mode-btn" class="px-4 py-2 rounded-xl bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-colors duration-200">Easy</button>
+        <button id="hard-mode-btn" class="px-4 py-2 rounded-xl bg-red-700 text-white font-semibold transition-colors duration-200">Hard</button>
+      </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row items-center gap-4 mt-4 hidden" id="hint-options">
+      <button id="ai-hint-button" class="px-6 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold">Show AI's Expected Move</button>
+    </div>
+
+    <button id="reset-button" class="px-6 py-2 rounded-xl bg-gray-600 hover:bg-gray-700 text-white font-semibold mt-4 hidden">Reset Board</button>
+  </div>
+</section>
+
+<!-- Game Over Overlay -->
+<div id="game-over-overlay">
+  <div class="card-glass p-8 rounded-2xl text-center flex flex-col items-center">
+    <h2 id="end-game-message" class="text-4xl sm:text-5xl font-extrabold mb-4"></h2>
+    <button id="play-again-button" class="mt-4 px-8 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold text-lg transition-colors duration-200">Play Again</button>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="py-6 sm:py-8 border-t border-gray-800 text-center text-gray-400 text-sm sm:text-base">
+  <p>&copy; 2025 WaryWEB. All Rights Reserved.</p>
+</footer>
+
+<script>
+  // --- Global Clock + Date ---
+  function updateTime() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('clock').textContent = `${hours}:${minutes}`;
+    document.getElementById('mobile-clock').textContent = `${hours}:${minutes}`;
+    document.getElementById('mobile-time-small').textContent = `${hours}:${minutes}`;
+    const month = now.toLocaleString('default', { month: 'short' });
+    const dateText = `${month}, ${now.getFullYear()}`;
+    document.getElementById('date').textContent = dateText;
+    document.getElementById('mobile-date').textContent = dateText;
+    document.getElementById('mobile-date-small').textContent = dateText;
+  }
+  updateTime();
+  setInterval(updateTime, 60000);
+
+  // Mobile menu toggle
+  document.getElementById('mobile-menu-button').addEventListener('click', () => {
+    document.getElementById('mobile-menu').classList.add('active');
+  });
+  document.getElementById('close-menu').addEventListener('click', () => {
+    document.getElementById('mobile-menu').classList.remove('active');
+  });
+
+  // --- Connect Four Game Logic ---
+  const rows = 6;
+  const cols = 7;
+  const gameBoardEl = document.getElementById('game-board');
+  const messageEl = document.getElementById('game-message');
+  const p1WinsEl = document.getElementById('p1-wins');
+  const p2WinsEl = document.getElementById('p2-wins');
+  const pvpModeBtn = document.getElementById('pvp-mode');
+  const aiModeBtn = document.getElementById('ai-mode');
+  const easyModeBtn = document.getElementById('easy-mode-btn');
+  const hardModeBtn = document.getElementById('hard-mode-btn');
+  const resetBtn = document.getElementById('reset-button');
+  const difficultyOptions = document.getElementById('difficulty-options');
+  const hintOptions = document.getElementById('hint-options');
+  const hintBtn = document.getElementById('ai-hint-button');
+  const gameOverOverlay = document.getElementById('game-over-overlay');
+  const endGameMessage = document.getElementById('end-game-message');
+  const playAgainBtn = document.getElementById('play-again-button');
+
+  // Game state variables
+  const EMPTY = 0;
+  const PLAYER_1 = 1; // Red
+  const PLAYER_2 = 2; // Yellow
+
+  let board = [];
+  let currentPlayer = PLAYER_1;
+  let gameActive = false;
+  let gameMode = 'pvp'; // 'ai' or 'pvp'
+  let difficulty = 'hard'; // 'easy' or 'hard'
+  let p1Wins = 0;
+  let p2Wins = 0;
+  let aiThinking = false;
+  let isHintActive = false;
+
+  /**
+   * Initializes the game board and state.
+   */
+  function initGame() {
+      board = Array.from({ length: rows }, () => Array(cols).fill(EMPTY));
+      currentPlayer = PLAYER_1;
+      gameActive = true;
+      aiThinking = false;
+      isHintActive = false;
+      gameOverOverlay.classList.remove('visible'); // Hide the overlay
+      updateMessage("Player 1 (Red)'s turn.");
+      renderBoard();
+  }
+
+  /**
+   * Updates the message displayed to the user.
+   * @param {string} msg The message to display.
+   */
+  function updateMessage(msg) {
+      messageEl.textContent = msg;
+  }
+
+  /**
+   * Renders the game board in the UI.
+   */
+  function renderBoard() {
+      gameBoardEl.innerHTML = '';
+      for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+              const cell = document.createElement('div');
+              cell.className = 'grid-cell';
+              cell.dataset.row = r;
+              cell.dataset.col = c;
+
+              if (board[r][c] !== EMPTY) {
+                  const disc = document.createElement('div');
+                  disc.className = `disc ${board[r][c] === PLAYER_1 ? 'red' : 'yellow'}`;
+                  cell.appendChild(disc);
+              } else if (!gameActive || aiThinking || isHintActive) {
+                  cell.classList.add('occupied');
+              }
+
+              cell.addEventListener('click', () => handleMove(c));
+              gameBoardEl.appendChild(cell);
+          }
+      }
+  }
+
+  /**
+   * Handles a player's move.
+   * @param {number} col The column to drop the disc into.
+   */
+  function handleMove(col) {
+      if (!gameActive || aiThinking || isHintActive) {
+          return;
+      }
+
+      const validRow = getValidRow(col);
+      if (validRow === -1) {
+          updateMessage("That column is full! Try another one.");
+          return;
+      }
+
+      board[validRow][col] = currentPlayer;
+      renderBoard(); // Re-render to show the new disc
+
+      if (checkWin(validRow, col, currentPlayer)) {
+          endGame(currentPlayer);
+      } else if (checkTie()) {
+          endGame(null);
+      } else {
+          currentPlayer = currentPlayer === PLAYER_1 ? PLAYER_2 : PLAYER_1;
+          updateMessage(`${currentPlayer === PLAYER_1 ? 'Player 1 (Red)' : 'Player 2 (Yellow)'}'s turn.`);
+          if (gameMode === 'ai' && currentPlayer === PLAYER_2) {
+              handleAITurn();
+          }
+      }
+  }
+
+  /**
+   * Finds the lowest available row in a column.
+   * @param {number} col The column index.
+   * @returns {number} The row index, or -1 if the column is full.
+   */
+  function getValidRow(col) {
+      for (let r = rows - 1; r >= 0; r--) {
+          if (board[r][col] === EMPTY) {
+              return r;
+          }
+      }
+      return -1;
+  }
+
+  /**
+   * Checks for a win condition.
+   * @param {number} r The row of the last move.
+   * @param {number} c The column of the last move.
+   * @param {number} player The player who made the last move.
+   * @returns {boolean} True if the player has won, false otherwise.
+   */
+  function checkWin(r, c, player) {
+      // Horizontal check
+      let count = 0;
+      for (let j = 0; j < cols; j++) {
+          if (board[r][j] === player) {
+              count++;
+              if (count >= 4) return true;
+          } else {
+              count = 0;
+          }
+      }
+
+      // Vertical check
+      count = 0;
+      for (let i = 0; i < rows; i++) {
+          if (board[i][c] === player) {
+              count++;
+              if (count >= 4) return true;
+          } else {
+              count = 0;
+          }
+      }
+
+      // Diagonal (up-left to down-right) check
+      count = 0;
+      let startR = r - Math.min(r, c);
+      let startC = c - Math.min(r, c);
+      while (startR < rows && startC < cols) {
+          if (board[startR][startC] === player) {
+              count++;
+              if (count >= 4) return true;
+          } else {
+              count = 0;
+          }
+          startR++;
+          startC++;
+      }
+
+      // Diagonal (up-right to down-left) check
+      count = 0;
+      startR = r + Math.min(rows - 1 - r, c);
+      startC = c - Math.min(rows - 1 - r, c);
+      while (startR >= 0 && startC < cols) {
+          if (board[startR][startC] === player) {
+              count++;
+              if (count >= 4) return true;
+          } else {
+              count = 0;
+          }
+          startR--;
+          startC++;
+      }
+
+      return false;
+  }
+
+  /**
+   * Checks for a tie game.
+   * @returns {boolean} True if the board is full, false otherwise.
+   */
+  function checkTie() {
+      return board.flat().every(cell => cell !== EMPTY);
+  }
+
+  /**
+   * Ends the game and displays the winner in a central overlay.
+   * @param {number | null} winner The winning player, or null for a tie.
+   */
+  function endGame(winner) {
+      gameActive = false;
+      if (winner === PLAYER_1) {
+          p1Wins++;
+          p1WinsEl.textContent = p1Wins;
+          endGameMessage.textContent = "Player 1 Wins!";
+          endGameMessage.style.color = '#dc2626'; // Red color
+      } else if (winner === PLAYER_2) {
+          p2Wins++;
+          p2WinsEl.textContent = p2Wins;
+          endGameMessage.textContent = "Player 2 Wins!";
+          endGameMessage.style.color = '#eab308'; // Yellow color
+      } else {
+          endGameMessage.textContent = "It's a Tie!";
+          endGameMessage.style.color = '#fff'; // White color
+      }
+      gameOverOverlay.classList.add('visible'); // Show the overlay
+      renderBoard(); // Final render
+  }
+
+  /**
+   * AI logic for Easy mode. Chooses a random valid column.
+   * @returns {number} The column to play in.
+   */
+  function findEasyAIMove() {
+      const validCols = [];
+      for(let c = 0; c < cols; c++) {
+          if (getValidRow(c) !== -1) {
+              validCols.push(c);
+          }
+      }
+      if (validCols.length === 0) return -1;
+      const randomIndex = Math.floor(Math.random() * validCols.length);
+      return validCols[randomIndex];
+  }
+
+  /**
+   * AI logic for Hard mode. Prioritizes winning, then blocking.
+   * @param {number} player The player to find a move for.
+   * @param {number} opponent The opponent to block.
+   * @returns {number} The column to play in.
+   */
+  function findHardAIMove(player, opponent) {
+      // 1. Check for immediate winning move
+      for (let c = 0; c < cols; c++) {
+          const r = getValidRow(c);
+          if (r !== -1) {
+              board[r][c] = player;
+              if (checkWin(r, c, player)) {
+                  board[r][c] = EMPTY; // Reset
+                  return c;
+              }
+              board[r][c] = EMPTY; // Reset
+          }
+      }
+
+      // 2. Check for immediate blocking move
+      for (let c = 0; c < cols; c++) {
+          const r = getValidRow(c);
+          if (r !== -1) {
+              board[r][c] = opponent;
+              if (checkWin(r, c, opponent)) {
+                  board[r][c] = EMPTY; // Reset
+                  return c;
+              }
+              board[r][c] = EMPTY; // Reset
+          }
+      }
+
+      // 3. Play a random valid move if no strategic move is found
+      return findEasyAIMove();
+  }
+
+  /**
+   * Highlights a cell and then removes the highlight after a delay.
+   * @param {number} r The row of the cell to highlight.
+   * @param {number} c The column of the cell to highlight.
+   * @param {string} highlightClass The CSS class to apply for highlighting.
+   * @param {function} callback Optional callback to run after the highlight is removed.
+   */
+  function highlightCell(r, c, highlightClass, callback) {
+      const cell = gameBoardEl.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+      if (cell) {
+          cell.classList.add(highlightClass);
+          setTimeout(() => {
+              cell.classList.remove(highlightClass);
+              if (callback) {
+                  callback();
+              }
+          }, 1000); // 1 second highlight duration
+      } else {
+          if (callback) {
+              callback();
+          }
+      }
+  }
+
+  /**
+   * Handles the AI's turn.
+   */
+  function handleAITurn() {
+      aiThinking = true;
+      updateMessage("Player 2 (Yellow) is thinking...");
+
+      let aiMoveCol;
+      if (difficulty === 'hard') {
+          aiMoveCol = findHardAIMove(PLAYER_2, PLAYER_1);
+      } else {
+          aiMoveCol = findEasyAIMove();
+      }
+
+      // Short delay to simulate "thinking"
+      setTimeout(() => {
+          if (aiMoveCol !== -1) {
+              const aiMoveRow = getValidRow(aiMoveCol);
+              highlightCell(aiMoveRow, aiMoveCol, 'ai-move-highlight', () => {
+                  aiThinking = false;
+                  handleMove(aiMoveCol);
+              });
+          } else {
+              // Pass turn to human player if AI has no moves
+              aiThinking = false;
+              currentPlayer = PLAYER_1;
+              updateMessage("AI has no valid moves. Player 1 (Red)'s turn.");
+          }
+      }, 1500); // Wait 1.5 seconds for "thinking"
+  }
+
+  /**
+   * Shows the AI's expected move as a hint.
+   */
+  function showAIHint() {
+      if (!gameActive || isHintActive || gameMode === 'ai') {
+          return;
+      }
+
+      isHintActive = true;
+      updateMessage("Showing AI's best move...");
+
+      let hintCol = findHardAIMove(currentPlayer, currentPlayer === PLAYER_1 ? PLAYER_2 : PLAYER_1);
+      if (hintCol !== -1) {
+          const hintRow = getValidRow(hintCol);
+          highlightCell(hintRow, hintCol, 'ai-move-highlight', () => {
+              isHintActive = false;
+              updateMessage(`${currentPlayer === PLAYER_1 ? 'Player 1 (Red)' : 'Player 2 (Yellow)'}'s turn.`);
+          });
+      } else {
+          isHintActive = false;
+          updateMessage("AI has no winning move. Try to block the opponent!");
+      }
+  }
+
+  // Event listeners for mode selection and reset
+  pvpModeBtn.addEventListener('click', () => setGameMode('pvp'));
+  aiModeBtn.addEventListener('click', () => setGameMode('ai'));
+  easyModeBtn.addEventListener('click', () => setDifficulty('easy'));
+  hardModeBtn.addEventListener('click', () => setDifficulty('hard'));
+  resetBtn.addEventListener('click', initGame);
+  hintBtn.addEventListener('click', showAIHint);
+  playAgainBtn.addEventListener('click', initGame);
+
+  /**
+   * Sets the game mode.
+   * @param {string} mode The game mode ('ai' or 'pvp').
+   */
+  function setGameMode(mode) {
+      gameMode = mode;
+      pvpModeBtn.classList.remove('bg-red-700', 'hover:bg-red-800');
+      pvpModeBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+      aiModeBtn.classList.remove('bg-yellow-700', 'hover:bg-yellow-800');
+      aiModeBtn.classList.add('bg-yellow-600', 'hover:bg-yellow-700');
+
+      if (mode === 'pvp') {
+          pvpModeBtn.classList.remove('bg-red-600');
+          pvpModeBtn.classList.add('bg-red-700');
+          difficultyOptions.classList.add('hidden');
+          hintOptions.classList.remove('hidden');
+      } else {
+          aiModeBtn.classList.remove('bg-yellow-600');
+          aiModeBtn.classList.add('bg-yellow-700');
+          difficultyOptions.classList.remove('hidden');
+          hintOptions.classList.add('hidden');
+      }
+      initGame();
+  }
+
+  /**
+   * Sets the AI difficulty.
+   * @param {string} mode The difficulty mode ('easy' or 'hard').
+   */
+  function setDifficulty(mode) {
+      difficulty = mode;
+      easyModeBtn.classList.remove('bg-gray-700', 'hover:bg-gray-800');
+      easyModeBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
+      hardModeBtn.classList.remove('bg-red-700', 'hover:bg-red-800');
+      hardModeBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+      if (mode === 'easy') {
+          easyModeBtn.classList.remove('bg-gray-600');
+          easyModeBtn.classList.add('bg-gray-700');
+      } else {
+          hardModeBtn.classList.remove('bg-red-600');
+          hardModeBtn.classList.add('bg-red-700');
+      }
+      initGame();
+  }
+
+  // Initial game setup
+  window.onload = function() {
+      setGameMode('pvp'); // Start in PvP mode by default
+      setDifficulty('hard'); // Hard difficulty by default for AI mode
+  };
+</script>
+</body>
+</html>
