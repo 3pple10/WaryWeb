@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WaryWEB - Games Hub</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body {
@@ -214,28 +211,78 @@
         .card.match .card-content, .card.match .card-cover {
           box-shadow: 0 0 10px #34d399, 0 0 20px #34d399;
         }
+
+        /* Mobile menu styles */
+        .mobile-menu {
+          transform: translateX(100%);
+          transition: transform 0.3s ease-in-out;
+        }
+        .mobile-menu.active {
+          transform: translateX(0);
+        }
+
+        /* Prevent horizontal scrolling */
+        html, body {
+          overflow-x: hidden;
+        }
     </style>
 </head>
 <body class="text-white">
 
-<!-- Header -->
-<header class="fixed top-0 left-0 w-full bg-black/50 backdrop-blur-md border-b border-gray-800 z-50">
-    <div class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-        <a href="index.html" class="text-2xl font-black">WaryWEB</a>
-        <nav class="flex gap-8 text-gray-300">
+<header class="fixed top-0 left-0 w-full bg-black/80 backdrop-blur-md border-b border-gray-800 z-50">
+    <div class="max-w-6xl mx-auto flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+        <a href="index.html" class="text-xl sm:text-2xl font-black">WaryWEB</a>
+
+        <nav class="hidden md:flex gap-6 lg:gap-8 text-gray-300">
             <a href="games.html" class="nav-link hover:text-white text-white">Games</a>
             <a href="utilities.html" class="nav-link hover:text-white">Utilities</a>
             <a href="index.html#about" class="nav-link hover:text-white">About</a>
         </nav>
-        <div class="card-glass flex items-center gap-4 px-4 py-2 rounded-lg">
+
+        <button id="mobile-menu-button" class="md:hidden p-2">
+            <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+
+        <div class="hidden sm:flex card-glass items-center gap-4 px-4 py-2 rounded-lg">
             <div id="clock" class="text-lg font-bold">10:59</div>
             <div class="border-l border-gray-600 h-6"></div>
             <div id="date" class="text-sm text-gray-300">Dec, 2025</div>
         </div>
     </div>
+
+    <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-black/95 backdrop-blur-lg z-50 p-6 md:hidden">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-xl font-bold">Menu</h2>
+            <button id="close-menu" class="p-2">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <nav class="flex flex-col gap-6 text-lg">
+            <a href="games.html" class="nav-link hover:text-white py-2 text-white">Games</a>
+            <a href="utilities.html" class="nav-link hover:text-white py-2">Utilities</a>
+            <a href="index.html#about" class="nav-link hover:text-white py-2">About</a>
+        </nav>
+        <div class="mt-10 pt-6 border-t border-gray-700">
+            <div class="flex items-center gap-3">
+                <i data-lucide="clock" class="w-5 h-5"></i>
+                <div id="mobile-clock" class="font-medium">10:59</div>
+            </div>
+            <div class="flex items-center gap-3 mt-2">
+                <i data-lucide="calendar" class="w-5 h-5"></i>
+                <div id="mobile-date" class="text-gray-300">Dec, 2025</div>
+            </div>
+        </div>
+    </div>
 </header>
 
-<!-- Games Section -->
+<div class="sm:hidden fixed top-16 right-4 z-40">
+    <div class="card-glass px-3 py-1 rounded-lg text-sm flex items-center gap-2">
+        <span id="mobile-time-small" class="font-medium">10:59</span>
+        <span class="text-gray-300">•</span>
+        <span id="mobile-date-small">Dec, 2025</span>
+    </div>
+</div>
+
 <section id="games" class="py-24 px-6 min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-black/30 to-black/70">
     <div class="max-w-6xl w-full mx-auto text-center mb-12">
         <h3 class="text-4xl font-bold">Arcade Games</h3>
@@ -243,17 +290,14 @@
     </div>
 
     <div class="max-w-5xl w-full mx-auto p-6 md:p-12 card-glass rounded-2xl fade-in">
-        <!-- Game Selection Buttons -->
         <div class="flex flex-wrap justify-center gap-4 mb-8">
             <button onclick="showGame('minesweeper')" class="game-tab px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700 active">Minesweeper</button>
             <button onclick="showGame('whac-a-mole')" class="game-tab px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700">Whac-A-Mole</button>
             <button onclick="showGame('memory-game')" class="game-tab px-6 py-3 rounded-xl border border-gray-700 bg-gray-800 text-sm font-semibold hover:bg-gray-700">Memory Game</button>
         </div>
 
-        <!-- Game Containers -->
         <div id="game-container">
 
-            <!-- Minesweeper Game -->
             <div id="minesweeper" class="game-content">
                 <div class="text-center mb-6">
                     <h4 class="text-2xl font-bold mb-1">Minesweeper</h4>
@@ -275,7 +319,6 @@
                 </div>
             </div>
 
-            <!-- Whac-A-Mole Game -->
             <div id="whac-a-mole" class="game-content hidden">
                 <div class="text-center mb-6">
                     <h4 class="text-2xl font-bold mb-1">Whac-A-Mole</h4>
@@ -305,7 +348,6 @@
                 </div>
             </div>
 
-            <!-- Memory Game -->
             <div id="memory-game" class="game-content hidden">
                 <div class="text-center mb-6">
                     <h4 class="text-2xl font-bold mb-1">Memory Game</h4>
@@ -326,8 +368,7 @@
     </div>
 </section>
 
-<!-- Footer -->
-<footer class="py-8 border-t border-gray-800 text-center text-gray-400">
+<footer class="py-6 sm:py-8 border-t border-gray-800 text-center text-gray-400 text-sm sm:text-base">
     <p>&copy; 2025 WaryWEB. All Rights Reserved.</p>
 </footer>
 
@@ -337,13 +378,38 @@
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
+
+      // Update all clock elements
       document.getElementById('clock').textContent = `${hours}:${minutes}`;
+      document.getElementById('mobile-clock').textContent = `${hours}:${minutes}`;
+      document.getElementById('mobile-time-small').textContent = `${hours}:${minutes}`;
+
+      // Update date elements
       const month = now.toLocaleString('default', { month: 'short' });
-      const day = now.getDate();
-      document.getElementById('date').textContent = `${month} ${day}, ${now.getFullYear()}`;
+      const dateText = `${month}, ${now.getFullYear()}`;
+      document.getElementById('date').textContent = dateText;
+      document.getElementById('mobile-date').textContent = dateText;
+      document.getElementById('mobile-date-small').textContent = dateText;
     }
     setInterval(updateTime, 1000);
     updateTime();
+
+    // Mobile menu functionality
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const closeMenuButton = document.getElementById('close-menu');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    function toggleMobileMenu() {
+        mobileMenu.classList.toggle('active');
+    }
+
+    mobileMenuButton.addEventListener('click', toggleMobileMenu);
+    closeMenuButton.addEventListener('click', toggleMobileMenu);
+
+    // Close menu when clicking on links
+    document.querySelectorAll('#mobile-menu a').forEach(link => {
+      link.addEventListener('click', toggleMobileMenu);
+    });
 
     // --- Fade-in scroll animation ---
     const observer = new IntersectionObserver(entries => {
@@ -721,6 +787,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       updateTime();
       showGame('minesweeper');
+      lucide.createIcons();
     });
 
 </script>
